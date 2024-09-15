@@ -1,0 +1,15 @@
+{
+  "name": "slimo-logger",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./src/SlimoLogger.js",
+  "scripts": {
+    "test": "jasmine tests/*_test.js"
+  },
+  "keywords": ["flow", "logger"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "thds": "^1.1.0"
+  }
+}
