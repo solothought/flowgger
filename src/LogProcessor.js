@@ -18,6 +18,7 @@ const defaultConfig = {
   //flow
   maxFlowExecTime: 10000, //for a flow 
   maxStepExecTime: 200,    //for a step
+  // maxStepExecTime: 5000,    //for a step
   maxHaltedFlows: 500     //for flows didn't end in expected time
 }
 class LogProcessor{
@@ -35,7 +36,7 @@ class LogProcessor{
     this.#flows = flows; //TODO
   }
 
-  register(flowName, headers){
+  register(flowName){
     const flow = this.#flows[flowName];
     if(!flow) throw Error("Invalid Flow name.");
     
@@ -52,10 +53,11 @@ class LogProcessor{
 
   record(id, msg, time){
     const logRecord = this.#logFlows.get(id);
+    // console.log(logRecord)
     if(!logRecord) this.#unexpectedLog(id,msg,time);
     else{
       this.#logFlows.delayExpiry(id);
-      this.#updateLogRecord(logRecord, msg, time);
+      this.#updateLogRecord(logRecord, logRecord.currentNode, msg, time);
     }
   }
 
@@ -71,8 +73,8 @@ class LogProcessor{
     const logRecord = this.#logFlows.get(id);
     if(!logRecord) this.#unexpectedLog("",time);
     else{
-      this.#updateLogRecord(logRecord, "✅");
-      this.flush(logRecord.id);
+      this.markLogMsg(logRecord);
+      this.flush(id);
     }
   }
 
@@ -85,30 +87,34 @@ class LogProcessor{
    * @param {number} time 
    */
   #updateLogRecord(logRecord, node, msg, time){
+    // console.log(node);
     if(Array.isArray(node)){
-      this.#loopThrough(logRecord, node, msg, time);
+      return this.#loopThrough(logRecord, node, msg, time);
     }else if(branchSteps.includes(node.type)){
-      this.#loopThrough(logRecord, node.nextStep, msg, time);
+      return this.#loopThrough(logRecord, node.nextStep, msg, time);
     }else if(node.type === "FOLLOW"){
       //TODO: 
     }else if(node.msg === msg){
+      console.log("matching", node.msg, msg);
       this.#updateLogMsgWithExecDuration(logRecord, node.index, time);
       logRecord.seq.push({index: node.index, time: time});
-      logRecord.currentNode = node;
-    }else{
-      logRecord.failed = true;
-      this.#updateLogMsgWithExecDuration(logRecord, `❌${msg}`, time);
-      this.flush(logRecord.id);
+      logRecord.currentNode = node.nextStep;
+      return true;
     }
   }
   #loopThrough(logRecord, steps, msg, time){
+    let foundMatch = false;
     for (let i = 0; i < steps.length; i++) {
       const step = steps[i];
-      if(step != null) this.#updateLogRecord(logRecord, step, msg, time);
+      if(step) foundMatch = this.#updateLogRecord(logRecord, step, msg, time);
+      if(foundMatch === true) return true;
     }
-    // unexpected
-    logRecord.logMsg += `>❌${msg}`;
-    flushFailedLogRecord(logRecord.id);
+    if(foundMatch === false){ //TODO: this is not testes
+      logRecord.failed = true;
+      this.#updateLogMsgWithExecDuration(logRecord, `❌${msg}`, time);
+      this.flush(logRecord.id);
+      return false;
+    }
   }
 
   /**
@@ -152,19 +158,21 @@ class LogProcessor{
       // ELSE
         // mark logRecord fail (flush)
     console.log("Expiring", logRecord.id);
-    if(logRecord.currentNode 
-      && (logRecord.currentNode.nextStep.length === 0
-        || logRecord.currentNode.nextStep.includes(null))){
-      // TODO: it is possible that nestStep has some branch step (or series of branch steps) which eventually point to null
-      this.flush(logFlowId);
-    }else{
-      // logRecord.failed = true;
-      logRecord.logMsg += ">🕑❌";
-      this.flush(logFlowId);
-    }
+    this.markLogMsg(logRecord);
+    this.flush(logFlowId);
   }
 
-
+  markLogMsg(logRecord){
+    const node = logRecord.currentNode;
+    if( node
+      && (node.length === 0
+        || node.includes(null))){
+      // TODO: it is possible that nestStep has some branch step (or series of branch steps) which eventually point to null
+      logRecord.logMsg += ">✅";
+    }else{
+      logRecord.logMsg += ">🕑❌";
+    }
+  }
     
 }
 
