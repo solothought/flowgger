@@ -6,10 +6,14 @@
   "scripts": {
     "test": "jasmine tests/*_test.js"
   },
-  "keywords": ["flow", "logger"],
+  "keywords": [
+    "flow",
+    "logger"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "thds": "^1.1.0"
+    "slimo": "^1.1.0",
+    "thds": "file:../tsds"
   }
 }
