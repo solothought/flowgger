@@ -9,8 +9,8 @@ class LogFlow{
     this.id= flowId,
     this.currentNode= flowSteps,
     this.seq=[{index:-1,time: Date.now()}],
-    logMsg= generateMsgHeader(flowId, flowName),
-    failed= false
+    this.logMsg= generateMsgHeader(flowId, flowName),
+    this.failed= false
   }
 }
 const defaultConfig = {
@@ -36,11 +36,12 @@ class LogProcessor{
   }
 
   register(flowName, headers){
-    const meta = Object.assign({},
-      {maxStepExecTime: this.#config.maxStepExecTime}
-      ,headers); 
     const flow = this.#flows[flowName];
     if(!flow) throw Error("Invalid Flow name.");
+    
+    const meta = Object.assign({},
+      {maxStepExecTime: this.#config.maxStepExecTime}
+      ,flow.headers); 
     
     const flowId = Date.now();
     this.#logFlows.add(flowId,
@@ -68,7 +69,7 @@ class LogProcessor{
    */
   end(id, time){
     const logRecord = this.#logFlows.get(id);
-    if(!logRecord) this.#unexpectedLog(id,msg,time);
+    if(!logRecord) this.#unexpectedLog("",time);
     else{
       this.#updateLogRecord(logRecord, "✅");
       this.flush(logRecord.id);
@@ -88,13 +89,15 @@ class LogProcessor{
       this.#loopThrough(logRecord, node, msg, time);
     }else if(branchSteps.includes(node.type)){
       this.#loopThrough(logRecord, node.nextStep, msg, time);
+    }else if(node.type === "FOLLOW"){
+      //TODO: 
     }else if(node.msg === msg){
-      this.#updateLogMsgWithExecDuration(logRecord, node.index);
+      this.#updateLogMsgWithExecDuration(logRecord, node.index, time);
       logRecord.seq.push({index: node.index, time: time});
       logRecord.currentNode = node;
     }else{
       logRecord.failed = true;
-      this.#updateLogMsgWithExecDuration(logRecord, `❌${msg}`);
+      this.#updateLogMsgWithExecDuration(logRecord, `❌${msg}`, time);
       this.flush(logRecord.id);
     }
   }
@@ -113,7 +116,7 @@ class LogProcessor{
    * @param {LogFlow} logRecord 
    * @param {string} msg 
    */
-  #updateLogMsgWithExecDuration(logRecord, msg){
+  #updateLogMsgWithExecDuration(logRecord, msg, timeNow){
     const lastStep = logRecord.seq[logRecord.seq.length - 1]
     lastStep.duration = lastStep.time - timeNow;
     if(lastStep.duration > this.#config.maxStepExecTime){
@@ -123,8 +126,10 @@ class LogProcessor{
     }
   }
   flush(id){
+    console.log("flushed")
+    const logRecord = this.#logFlows.get(id);
     this.#writeToLogFile(logRecord);
-    delete this.#logFlows.get(id);
+    this.#logFlows.removeEntry(id);
   }
 
   #writeToLogFile(logRecord){
@@ -146,11 +151,11 @@ class LogProcessor{
         // mark logRecord successful (flush)
       // ELSE
         // mark logRecord fail (flush)
-    
+    console.log("Expiring", logRecord.id);
     if(logRecord.currentNode 
       && (logRecord.currentNode.nextStep.length === 0
         || logRecord.currentNode.nextStep.includes(null))){
-      
+      // TODO: it is possible that nestStep has some branch step (or series of branch steps) which eventually point to null
       this.flush(logFlowId);
     }else{
       // logRecord.failed = true;
