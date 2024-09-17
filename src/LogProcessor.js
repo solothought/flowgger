@@ -2,7 +2,7 @@ const {ExpirableList} = require("thds");
 
 const branchSteps = ["IF", "ELSE_IF", "LOOP"];
 function generateMsgHeader(id,flowName){
-  return `${Date.now()}:${id}:${flowName}:`;
+  return `${Date.now()}:${id}:${flowName}`;
 }
 class LogFlow{
   constructor(flowId,flowName, flowSteps){
@@ -15,6 +15,10 @@ class LogFlow{
 }
 const defaultConfig = {
   //log file path
+  mainStream: [process.stdout], // for flow sequence (delayed)
+  errStream:[process.stderr],   // for error msg and it's data (immediate)
+  dataStream:[process.stdout],  // for extra data for logging (immediate)
+  headStream:[process.stdout],  // for start of a flow (immediate)
   //flow
   maxFlowExecTime: 10000, //for a flow 
   maxStepExecTime: 200,    //for a step
@@ -25,8 +29,15 @@ class LogProcessor{
   #config;
   #logFlows;
   #flows;
+  // #pipeStream;
   constructor(config, flows){
     this.#config = Object.assign({},defaultConfig,config);
+
+    //piping
+    this.#pipeStream(this.#config.mainStream);
+    this.#pipeStream(this.#config.errStream);
+    this.#pipeStream(this.#config.dataStream);
+    this.#pipeStream(this.#config.headStream);
 
     this.#logFlows = new ExpirableList({
       entryLifespan: this.#config.maxStepExecTime, 
@@ -35,7 +46,13 @@ class LogProcessor{
     }, this.#onExpiry);
     this.#flows = flows; //TODO
   }
-
+  #pipeStream(arr){
+    let mainStream = arr[0];
+    for (let i = 1; i < arr.length; i++) {
+      mainStream = mainStream.pipe(arr[i]);
+    }
+    arr[0] = mainStream;
+  }
   register(flowName){
     const flow = this.#flows[flowName];
     if(!flow) throw Error("Invalid Flow name.");
@@ -45,11 +62,14 @@ class LogProcessor{
       ,flow.headers); 
     
     const flowId = Date.now();
+    const logRecord = new LogFlow(flowId, flowName, flow.steps);
     this.#logFlows.add(flowId,
-      new LogFlow(flowId, flowName, flow.steps),
+      logRecord,
       meta.maxStepExecTime);
+    this.#writeToHeadStream(logRecord)
     return flowId;
   }
+
 
   record(id, msg, time){
     const logRecord = this.#logFlows.get(id);
@@ -60,7 +80,8 @@ class LogProcessor{
       this.#updateLogRecord(logRecord, logRecord.currentNode, msg, time);
     }
   }
-
+  recordErr(id, msg, time){}
+  recordData(id, obj, time){}
   /**
    * Signal the ending of a flow.
    * 
@@ -134,12 +155,22 @@ class LogProcessor{
   flush(id){
     console.log("flushed")
     const logRecord = this.#logFlows.get(id);
-    this.#writeToLogFile(logRecord);
+    this.#writeToMainStream(logRecord);
     this.#logFlows.removeEntry(id);
   }
 
-  #writeToLogFile(logRecord){
-    console.log(logRecord.logMsg);
+  #writeToMainStream(logRecord){
+    this.#config.mainStream[0].write(logRecord.logMsg);
+    // console.log(logRecord.logMsg);
+  }
+  #writeToHeadStream(logRecord){
+    this.#config.headStream[0].write(logRecord.logMsg);
+  }
+  #writeToErrStream(logRecord){
+    this.#config.errStream[0].write(logRecord.logMsg);
+  }
+  #writeToDataStream(logRecord){
+    this.#config.dataStream[0].write(logRecord.logMsg);
   }
   #unexpectedLog(msg, time){
     console.log("late:", msg)
