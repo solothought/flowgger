@@ -72,6 +72,18 @@ describe("Slimo Logger", function() {
     expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
     expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>✅`);
   });
+  it("should end flow on expiry when optional steps are in flow", function(done) {
+    streamData = [];
+    const logInstance = logger.init("first flow");
+    logInstance.log("this is the sample flow")
+    logInstance.log("until the next condition is true")
+    //assert mystream
+    setTimeout(() => {
+      expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
+      expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>✅`);
+      done();
+    }, 500);
+  });
 
 
 

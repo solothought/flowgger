@@ -42,8 +42,8 @@ class LogProcessor{
       entryLifespan: this.#config.maxStepExecTime, 
       cleanupInterval: this.#config.maxFlowExecTime,
       maxExpiredEntries: 1000
-    }, this.#onExpiry);
-    this.#flows = flows; //TODO
+    }, this.#onExpiry.bind(this));
+    this.#flows = flows;
   }
   #pipeStream(arr){
     let mainStream = arr[0];
@@ -62,9 +62,7 @@ class LogProcessor{
     
     const flowId = Date.now();
     const logRecord = new LogFlow(flowId, flowName, flow.steps);
-    this.#logFlows.add(flowId,
-      logRecord,
-      meta.maxStepExecTime);
+    this.#logFlows.add(flowId, logRecord, meta.maxStepExecTime);
     this.#writeToHeadStream(logRecord)
     return flowId;
   }
@@ -116,7 +114,7 @@ class LogProcessor{
   end(id, time){
     const logRecord = this.#logFlows.get(id);
     if(logRecord){
-      this.markLogMsg(logRecord, time);
+      this.#markLogMsg(logRecord, time);
       this.flush(id);
     }
   }
@@ -214,11 +212,11 @@ class LogProcessor{
    * @param {LogFlow} logRecord 
    */
   #onExpiry(logFlowId, logRecord){ //TODO: make it async
-    this.markLogMsg(logRecord, Date.now(), "🕑");
+    this.#markLogMsg(logRecord, Date.now(), "🕑");
     this.flush(logFlowId);
   }
 
-  markLogMsg(logRecord, time, reason = ""){
+  #markLogMsg(logRecord, time, reason = ""){
     const node = logRecord.currentNode;
     if( node && isPointingToEnd (node, logRecord.nodeType)){
       this.#updateLogMsgWithExecDuration(logRecord, `✅`, time);
