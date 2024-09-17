@@ -2,14 +2,15 @@ const {ExpirableList} = require("thds");
 
 const branchSteps = ["IF", "ELSE_IF", "LOOP"];
 function generateMsgHeader(id,flowName){
-  return `${Date.now()}:${id}:${flowName}`;
+  return `${id}:${flowName}`;
 }
 class LogFlow{
   constructor(flowId,flowName, flowSteps){
     this.id= flowId,
     this.currentNode= flowSteps,
     this.seq=[{index:-1,time: Date.now()}],
-    this.logMsg= generateMsgHeader(flowId, flowName),
+    this.logHead= `${flowId}:${flowName}`,
+    this.logMsg= `${flowId}:${flowName}`,
     this.failed= false
   }
 }
@@ -81,7 +82,15 @@ class LogProcessor{
     }
   }
   recordErr(id, msg, time){}
-  recordData(id, obj, time){}
+  /**
+   * to log extra data related to flow
+   * @param {string} id Flow Id
+   * @param {Object} obj data to log 
+   * @param {number} time time of logging
+   */
+  recordData(id, obj, time){
+    //data should be logged when the record is failed or as rules defined
+  }
   /**
    * Signal the ending of a flow.
    * 
@@ -164,7 +173,7 @@ class LogProcessor{
     // console.log(logRecord.logMsg);
   }
   #writeToHeadStream(logRecord){
-    this.#config.headStream[0].write(logRecord.logMsg);
+    this.#config.headStream[0].write(`${this.formatDate(Date.now())}:${logRecord.logHead}`);
   }
   #writeToErrStream(logRecord){
     this.#config.errStream[0].write(logRecord.logMsg);
@@ -174,6 +183,10 @@ class LogProcessor{
   }
   #unexpectedLog(msg, time){
     console.log("late:", msg)
+  }
+
+  formatDate(time){ //TODO: format as per config
+    return time;
   }
 
   /**
