@@ -81,7 +81,19 @@ class LogProcessor{
       this.#updateLogRecord(logRecord, logRecord.currentNode, msg, time);
     }
   }
-  recordErr(id, msg, time){}
+  /**
+   * to log data to an additional stream
+   * @param {string} id Flow Id
+   * @param {string} msg Error msg to log 
+   * @param {number} time time of logging
+   */
+  recordErr(id, msg, time){
+    const logRecord = this.#logFlows.get(id);
+    if(logRecord){
+      this.#writeToErrStream(logRecord);
+      this.record(id,msg,time);
+    }
+  }
   /**
    * to log extra data related to flow
    * @param {string} id Flow Id
@@ -89,7 +101,11 @@ class LogProcessor{
    * @param {number} time time of logging
    */
   recordData(id, obj, time){
-    //data should be logged when the record is failed or as rules defined
+    const logRecord = this.#logFlows.get(id);
+    if(logRecord){
+      //TODO: log the current step index
+      //data should be logged when the record is failed or as rules defined
+    }
   }
   /**
    * Signal the ending of a flow.
@@ -101,8 +117,7 @@ class LogProcessor{
    */
   end(id, time){
     const logRecord = this.#logFlows.get(id);
-    if(!logRecord) this.#unexpectedLog("",time);
-    else{
+    if(logRecord){
       this.markLogMsg(logRecord);
       this.flush(id);
     }
@@ -129,6 +144,10 @@ class LogProcessor{
       this.#updateLogMsgWithExecDuration(logRecord, node.index, time);
       logRecord.seq.push({index: node.index, time: time});
       logRecord.currentNode = node.nextStep;
+      if(node.nextStep.length === 0 || (node.nextStep.length ===1 && node.nextStep[0] === null)){
+        this.markLogMsg(logRecord);
+        this.flush(logRecord.id);
+      }
       return true;
     }
   }
@@ -175,10 +194,11 @@ class LogProcessor{
   #writeToHeadStream(logRecord){
     this.#config.headStream[0].write(`${this.formatDate(Date.now())}:${logRecord.logHead}`);
   }
-  #writeToErrStream(logRecord){
-    this.#config.errStream[0].write(logRecord.logMsg);
+  #writeToErrStream(logMsg){
+    this.#config.errStream[0].write(logMsg);
   }
-  #writeToDataStream(logRecord){
+  #writeToDataStream(obj){
+    //TODO: resolve circular dependency to transform to string
     this.#config.dataStream[0].write(logRecord.logMsg);
   }
   #unexpectedLog(msg, time){
@@ -201,7 +221,7 @@ class LogProcessor{
         // mark logRecord successful (flush)
       // ELSE
         // mark logRecord fail (flush)
-    console.log("Expiring", logRecord.id);
+    // console.log("Expiring", logRecord.id);
     this.markLogMsg(logRecord);
     this.flush(logFlowId);
   }
