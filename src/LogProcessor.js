@@ -96,7 +96,7 @@ class LogProcessor{
    * @param {Object} obj data to log 
    * @param {number} time time of logging
    */
-  recordData(id, obj, time){
+  recordData(id, data, time){
     const logRecord = this.#logFlows.get(id);
     if(logRecord){
       //TODO: log the current step index
@@ -183,6 +183,17 @@ class LogProcessor{
     this.#writeToMainStream(logRecord);
     this.#logFlows.removeEntry(id);
   }
+  flushAll(data){
+    this.#writeToErrStream(`Flushing all messages at ${this.formatDate(Date.now())}`);
+    this.#writeToErrStream(data); //TODO stringify it
+
+    this.#logFlows.forEachNonExpired((k,v)=>{
+      this.#writeToErrStream(v.logMsg);
+    }) 
+    this.#logFlows.forEachExpired((k,v)=>{
+      this.#writeToErrStream(v.logMsg);
+    })
+  }
 
   #writeToMainStream(logRecord){
     this.#config.mainStream[0].write(logRecord.logMsg);
@@ -194,9 +205,9 @@ class LogProcessor{
   #writeToErrStream(logMsg){
     this.#config.errStream[0].write(logMsg);
   }
-  #writeToDataStream(obj){
+  #writeToDataStream(data){
     //TODO: resolve circular dependency to transform to string
-    this.#config.dataStream[0].write(logRecord.logMsg);
+    this.#config.dataStream[0].write(data);
   }
   #unexpectedLog(msg, time){
     console.log("late:", msg)

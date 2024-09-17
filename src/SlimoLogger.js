@@ -37,8 +37,21 @@ class FlowLogger{
     this.lp = logProcessor;
     this.flowId = logProcessor.register(flowName);
   }
-  log(msg){
+  info(msg){
     this.lp.record(this.flowId, msg, Date.now());
+  }
+  error(msg){
+    this.lp.recordErr(this.flowId, msg, Date.now());
+  }
+  debug(data){
+    this.lp.record(this.flowId, msg, Date.now());
+  }
+  warn(msg){
+    // not supported
+    // this.lp.record(this.flowId, msg, Date.now());
+  }
+  fatal(data){
+    this.lp.flushAll(data);
   }
   end(){
     this.lp.end(this.flowId, Date.now());

@@ -25,10 +25,10 @@ describe("Slimo Logger", function() {
   it("should not wait for `end` when a non-branch step points to END", function() {
     streamData = [];
     const logInstance = logger.init("first flow");
-    logInstance.log("this is the sample flow")
-    logInstance.log("until the next condition is true")
-    logInstance.log("until the next condition is true")
-    logInstance.log("mark it complete")
+    logInstance.info("this is the sample flow")
+    logInstance.info("until the next condition is true")
+    logInstance.info("until the next condition is true")
+    logInstance.info("mark it complete")
     //assert mystream
 
     expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
@@ -38,11 +38,11 @@ describe("Slimo Logger", function() {
   it("should not error when `end` is called but flow is already ended", function() {
     streamData = [];
     const logInstance = logger.init("first flow");
-    logInstance.log("this is the sample flow")
-    logInstance.log("until the next condition is true")
-    logInstance.log("until the next condition is true")
-    logInstance.log("until the next condition is true")
-    logInstance.log("mark it complete")
+    logInstance.info("this is the sample flow")
+    logInstance.info("until the next condition is true")
+    logInstance.info("until the next condition is true")
+    logInstance.info("until the next condition is true")
+    logInstance.info("mark it complete")
     logInstance.end();
     //assert mystream
 
@@ -53,7 +53,7 @@ describe("Slimo Logger", function() {
   it("should end flow on `end` when optional steps are in flow", function() {
     streamData = [];
     const logInstance = logger.init("first flow");
-    logInstance.log("this is the sample flow")
+    logInstance.info("this is the sample flow")
     logInstance.end();
     //assert mystream
 
@@ -64,8 +64,8 @@ describe("Slimo Logger", function() {
   it("should end flow on `end` when optional steps are in flow", function() {
     streamData = [];
     const logInstance = logger.init("first flow");
-    logInstance.log("this is the sample flow")
-    logInstance.log("until the next condition is true")
+    logInstance.info("this is the sample flow")
+    logInstance.info("until the next condition is true")
     logInstance.end();
     //assert mystream
 
@@ -75,8 +75,8 @@ describe("Slimo Logger", function() {
   it("should end flow on expiry when optional steps are in flow", function(done) {
     streamData = [];
     const logInstance = logger.init("first flow");
-    logInstance.log("this is the sample flow")
-    logInstance.log("until the next condition is true")
+    logInstance.info("this is the sample flow")
+    logInstance.info("until the next condition is true")
     //assert mystream
     setTimeout(() => {
       expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
