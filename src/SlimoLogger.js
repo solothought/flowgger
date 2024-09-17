@@ -2,11 +2,11 @@ const LogProcessor = require("./LogProcessor");
 const Slimo = require("slimo");
 const fs = require("fs");
 const path = require("path");
+
 class Logger {
   constructor(config = {}) {
     if(!config.flowDir) throw Error("SlimoLogger: flow directory is not defined");
     const flows = readFlows(config.flowDir);
-    
     this.logProcessor = new LogProcessor(config, flows);
   }
 
@@ -25,7 +25,6 @@ function readFlows(dirPath){
     // console.log(JSON.stringify(f,null,4));
     flows = Object.assign(flows,f);
   });
-  console.log(flows);
   return flows;
 }
 

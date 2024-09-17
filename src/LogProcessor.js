@@ -116,7 +116,7 @@ class LogProcessor{
   end(id, time){
     const logRecord = this.#logFlows.get(id);
     if(logRecord){
-      this.markLogMsg(logRecord);
+      this.markLogMsg(logRecord, time);
       this.flush(id);
     }
   }
@@ -144,7 +144,7 @@ class LogProcessor{
       logRecord.currentNode = node.nextStep;
       logRecord.nodeType = node.type;
       if(node.nextStep.length === 0 || (node.nextStep.length ===1 && node.nextStep[0] === null)){
-        this.markLogMsg(logRecord);
+        this.#updateLogMsgWithExecDuration(logRecord, `✅`, time);
         this.flush(logRecord.id);
       }
       return true;
@@ -214,23 +214,16 @@ class LogProcessor{
    * @param {LogFlow} logRecord 
    */
   #onExpiry(logFlowId, logRecord){ //TODO: make it async
-    // FLOW: check for expired log records
-    // LOOP for each log record
-      // IF current step has nextStep with no step or a null step
-        // mark logRecord successful (flush)
-      // ELSE
-        // mark logRecord fail (flush)
-    // console.log("Expiring", logRecord.id);
-    this.markLogMsg(logRecord);
+    this.markLogMsg(logRecord, Date.now(), "🕑");
     this.flush(logFlowId);
   }
 
-  markLogMsg(logRecord){
+  markLogMsg(logRecord, time, reason = ""){
     const node = logRecord.currentNode;
     if( node && isPointingToEnd (node, logRecord.nodeType)){
-      logRecord.logMsg += ">✅";
+      this.#updateLogMsgWithExecDuration(logRecord, `✅`, time);
     }else{
-      logRecord.logMsg += ">🕑❌";
+      this.#updateLogMsgWithExecDuration(logRecord, `${reason}❌`, time);
     }
   }
     

@@ -50,7 +50,7 @@ describe("Slimo Logger", function() {
     expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>2>2>4>✅`);
   });
 
-  it("should not error when `end` is called but flow is already ended", function() {
+  it("should end flow on `end` when optional steps are in flow", function() {
     streamData = [];
     const logInstance = logger.init("first flow");
     logInstance.log("this is the sample flow")
@@ -60,5 +60,19 @@ describe("Slimo Logger", function() {
     expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
     expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>✅`);
   });
+
+  it("should end flow on `end` when optional steps are in flow", function() {
+    streamData = [];
+    const logInstance = logger.init("first flow");
+    logInstance.log("this is the sample flow")
+    logInstance.log("until the next condition is true")
+    logInstance.end();
+    //assert mystream
+
+    expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
+    expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>✅`);
+  });
+
+
 
 });
