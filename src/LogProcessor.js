@@ -1,9 +1,7 @@
 const {ExpirableList} = require("thds");
 
 const branchSteps = ["IF", "ELSE_IF", "LOOP"];
-function generateMsgHeader(id,flowName){
-  return `${id}:${flowName}`;
-}
+
 class LogFlow{
   constructor(flowId,flowName, flowSteps){
     this.id= flowId,
@@ -144,6 +142,7 @@ class LogProcessor{
       this.#updateLogMsgWithExecDuration(logRecord, node.index, time);
       logRecord.seq.push({index: node.index, time: time});
       logRecord.currentNode = node.nextStep;
+      logRecord.nodeType = node.type;
       if(node.nextStep.length === 0 || (node.nextStep.length ===1 && node.nextStep[0] === null)){
         this.markLogMsg(logRecord);
         this.flush(logRecord.id);
@@ -228,10 +227,7 @@ class LogProcessor{
 
   markLogMsg(logRecord){
     const node = logRecord.currentNode;
-    if( node
-      && (node.length === 0
-        || node.includes(null))){
-      // TODO: it is possible that nestStep has some branch step (or series of branch steps) which eventually point to null
+    if( node && isPointingToEnd (node, logRecord.nodeType)){
       logRecord.logMsg += ">✅";
     }else{
       logRecord.logMsg += ">🕑❌";
@@ -240,5 +236,27 @@ class LogProcessor{
     
 }
 
+function isPointingToEnd(node, type, cache = []){
+  // console.log(node);
+  if(node.includes(null)) return true;
+  else if(node.length === 0) return true;
+  else if(isBranch(type) && node.length < 2 ) return true;
+  else {
+    let foundEnd = false;
+    for (let i = 0; i < node.length; i++) { //max 2 times
+      const step = node[i];
+      if(!cache.includes(step.index) && isBranch(step.type)) {
+        cache.push(step.index);
+        foundEnd = isPointingToEnd(step.nextStep,step.type, cache);
+      }
+      if(foundEnd) return true;
+    }
+    return foundEnd;
+  }
+}
+
+function isBranch(type){
+  return branchSteps.includes(type);
+}
 
 module.exports = LogProcessor;
