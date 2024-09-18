@@ -1,4 +1,5 @@
 const {ExpirableList} = require("thds");
+const StreamHandler = require("./StreamHandler");
 
 const branchSteps = ["IF", "ELSE_IF", "LOOP"];
 
@@ -28,15 +29,15 @@ class LogProcessor{
   #config;
   #logFlows;
   #flows;
-  // #pipeStream;
+  #sh;
   constructor(config, flows){
     this.#config = Object.assign({},defaultConfig,config);
+    this.#sh = new StreamHandler();
+    this.#sh.addStream("mainStream",this.#config.mainStream);
+    this.#sh.addStream("errStream",this.#config.errStream);
+    this.#sh.addStream("dataStream",this.#config.dataStream);
+    this.#sh.addStream("headStream",this.#config.headStream);
 
-    //piping
-    this.#pipeStream(this.#config.mainStream);
-    this.#pipeStream(this.#config.errStream);
-    this.#pipeStream(this.#config.dataStream);
-    this.#pipeStream(this.#config.headStream);
 
     this.#logFlows = new ExpirableList({
       entryLifespan: this.#config.maxStepExecTime, 
@@ -45,13 +46,7 @@ class LogProcessor{
     }, this.#onExpiry.bind(this));
     this.#flows = flows;
   }
-  #pipeStream(arr){
-    let mainStream = arr[0];
-    for (let i = 1; i < arr.length; i++) {
-      mainStream = mainStream.pipe(arr[i]);
-    }
-    arr[0] = mainStream;
-  }
+
   register(flowName){
     const flow = this.#flows[flowName];
     if(!flow) throw Error("Invalid Flow name.");
@@ -63,7 +58,7 @@ class LogProcessor{
     const flowId = Date.now();
     const logRecord = new LogFlow(flowId, flowName, flow.steps);
     this.#logFlows.add(flowId, logRecord, meta.maxStepExecTime);
-    this.#writeToHeadStream(logRecord)
+    this.#sh.log("headStream",`${this.formatDate(Date.now())}:${logRecord.logHead}`);
     return flowId;
   }
 
@@ -86,7 +81,7 @@ class LogProcessor{
   recordErr(id, msg, time){
     const logRecord = this.#logFlows.get(id);
     if(logRecord){
-      this.#writeToErrStream(logRecord);
+      this.#sh.log("errStream",msg);
       this.record(id,msg,time);
     }
   }
@@ -136,7 +131,7 @@ class LogProcessor{
     }else if(node.type === "FOLLOW"){
       //TODO: 
     }else if(node.msg === msg){
-      console.log("matching", node.msg, msg);
+      // console.log("matching", node.msg, msg);
       this.#updateLogMsgWithExecDuration(logRecord, node.index, time);
       logRecord.seq.push({index: node.index, time: time});
       logRecord.currentNode = node.nextStep;
@@ -180,35 +175,22 @@ class LogProcessor{
   flush(id){
     console.log("flushed")
     const logRecord = this.#logFlows.get(id);
-    this.#writeToMainStream(logRecord);
+    this.#sh.log("mainStream",logRecord.logMsg);
     this.#logFlows.removeEntry(id);
   }
   flushAll(data){
-    this.#writeToErrStream(`Flushing all messages at ${this.formatDate(Date.now())}`);
-    this.#writeToErrStream(data); //TODO stringify it
+    this.#sh.log("errStream", `Flushing all messages at ${this.formatDate(Date.now())}`);
+    this.#sh.log("errStream", data); //TODO stringify it
 
     this.#logFlows.forEachNonExpired((k,v)=>{
-      this.#writeToErrStream(v.logMsg);
+      this.#sh.log("errStream", v.logMsg);
     }) 
     this.#logFlows.forEachExpired((k,v)=>{
-      this.#writeToErrStream(v.logMsg);
+      this.#sh.log("errStream", v.logMsg);
     })
   }
 
-  #writeToMainStream(logRecord){
-    this.#config.mainStream[0].write(logRecord.logMsg);
-    // console.log(logRecord.logMsg);
-  }
-  #writeToHeadStream(logRecord){
-    this.#config.headStream[0].write(`${this.formatDate(Date.now())}:${logRecord.logHead}`);
-  }
-  #writeToErrStream(logMsg){
-    this.#config.errStream[0].write(logMsg);
-  }
-  #writeToDataStream(data){
-    //TODO: resolve circular dependency to transform to string
-    this.#config.dataStream[0].write(data);
-  }
+  
   #unexpectedLog(msg, time){
     console.log("late:", msg)
   }

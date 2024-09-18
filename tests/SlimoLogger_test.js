@@ -8,6 +8,7 @@ class MyStream {
   }
 
   write(chunk, encoding, callback) {
+    console.log(chunk)
     streamData.push(chunk);
     // callback();
   }
@@ -31,8 +32,8 @@ describe("Slimo Logger", function() {
     logInstance.info("mark it complete")
     //assert mystream
 
-    expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
-    expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>2>4>✅`);
+    expect(streamData[0].endsWith(`${logInstance.flowId}:first flow\n`)).toBeTrue();
+    expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>2>4>✅\n`);
   });
 
   it("should not error when `end` is called but flow is already ended", function() {
@@ -46,8 +47,8 @@ describe("Slimo Logger", function() {
     logInstance.end();
     //assert mystream
 
-    expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
-    expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>2>2>4>✅`);
+    expect(streamData[0].endsWith(`${logInstance.flowId}:first flow\n`)).toBeTrue();
+    expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>2>2>4>✅\n`);
   });
 
   it("should end flow on `end` when optional steps are in flow", function() {
@@ -57,8 +58,8 @@ describe("Slimo Logger", function() {
     logInstance.end();
     //assert mystream
 
-    expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
-    expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>✅`);
+    expect(streamData[0].endsWith(`${logInstance.flowId}:first flow\n`)).toBeTrue();
+    expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>✅\n`);
   });
 
   it("should end flow on `end` when optional steps are in flow", function() {
@@ -69,8 +70,8 @@ describe("Slimo Logger", function() {
     logInstance.end();
     //assert mystream
 
-    expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
-    expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>✅`);
+    expect(streamData[0].endsWith(`${logInstance.flowId}:first flow\n`)).toBeTrue();
+    expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>✅\n`);
   });
   it("should end flow on expiry when optional steps are in flow", function(done) {
     streamData = [];
@@ -79,8 +80,8 @@ describe("Slimo Logger", function() {
     logInstance.info("until the next condition is true")
     //assert mystream
     setTimeout(() => {
-      expect(streamData[0].endsWith(`${logInstance.flowId}:first flow`)).toBeTrue();
-      expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>✅`);
+      expect(streamData[0].endsWith(`${logInstance.flowId}:first flow\n`)).toBeTrue();
+      expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>✅\n`);
       done();
     }, 500);
   });
