@@ -47,9 +47,14 @@ class LogProcessor{
     this.#flows = flows;
   }
 
-  register(flowName){
+  register(flowName, flowKeyVal){
+    if(this.#config.flowKey && !flowKeyVal) 
+      throw Error("Slimo Logger expects a flow key");
+    
+    if(flowKeyVal) flowName += `(${flowKeyVal})`;
+
     const flow = this.#flows[flowName];
-    if(!flow) throw Error("Invalid Flow name.");
+    if(!flow) throw Error(`Slimo Logger: Invalid Flow name: ${flowName}`);
     
     const meta = Object.assign({},
       {maxStepExecTime: this.#config.maxStepExecTime}
@@ -66,6 +71,7 @@ class LogProcessor{
   record(id, msg, time){
     const logRecord = this.#logFlows.get(id);
     // console.log(logRecord)
+    // console.log(msg)
     if(!logRecord) this.#unexpectedLog(id,msg,time);
     else{
       this.#logFlows.delayExpiry(id);
@@ -136,7 +142,7 @@ class LogProcessor{
       logRecord.seq.push({index: node.index, time: time});
       logRecord.currentNode = node.nextStep;
       logRecord.nodeType = node.type;
-      if(node.nextStep.length === 0 || (node.nextStep.length ===1 && node.nextStep[0] === null)){
+      if(isExitStep(node)){
         this.#updateLogMsgWithExecDuration(logRecord, `✅`, time);
         this.flush(logRecord.id);
       }
@@ -173,7 +179,7 @@ class LogProcessor{
     }
   }
   flush(id){
-    console.log("flushed")
+    // console.log("flushed")
     const logRecord = this.#logFlows.get(id);
     this.#sh.log("mainStream",logRecord.logMsg);
     this.#logFlows.removeEntry(id);
@@ -188,6 +194,8 @@ class LogProcessor{
     this.#logFlows.forEachExpired((k,v)=>{
       this.#sh.log("errStream", v.logMsg);
     })
+
+    //TODO: write in memory data to error stream
   }
 
   
@@ -205,6 +213,7 @@ class LogProcessor{
    * @param {LogFlow} logRecord 
    */
   #onExpiry(logFlowId, logRecord){ //TODO: make it async
+    // console.log("Expiring:",logFlowId)
     this.#markLogMsg(logRecord, Date.now(), "🕑");
     this.flush(logFlowId);
   }
@@ -220,6 +229,14 @@ class LogProcessor{
     
 }
 
+function isExitStep(node){
+  // for (let id = 0; id < flows.exitSteps.length; id++) {
+  //   const step = flows.exitSteps[id];
+  //   if(step.index === node.index) return true;
+  // }
+  // return false;
+  return node.nextStep.length === 0 || (node.nextStep.length ===1 && node.nextStep[0] === null);
+}
 function isPointingToEnd(node, type, cache = []){
   // console.log(node);
   if(node.includes(null)) return true;

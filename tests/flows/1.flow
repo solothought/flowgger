@@ -7,3 +7,22 @@ LOOP 4 times
   IF true
     mark it complete
     STOP
+
+
+FLOW: second flow
+v: 2
+this is the another flow
+LOOP 4 times
+  until the next condition is true
+  IF true
+    mark it complete
+    STOP
+
+FLOW: second flow
+v: 1
+this is the also another flow
+LOOP 4 times
+  until the next condition is true
+  IF true
+    mark it complete
+    STOP

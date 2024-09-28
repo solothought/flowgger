@@ -8,7 +8,7 @@ class MyStream {
   }
 
   write(chunk, encoding, callback) {
-    console.log(chunk)
+    // console.log(chunk)
     streamData.push(chunk);
     // callback();
   }
@@ -31,7 +31,7 @@ describe("Slimo Logger", function() {
     logInstance.info("until the next condition is true")
     logInstance.info("mark it complete")
     //assert mystream
-
+    // console.log(streamData);
     expect(streamData[0].endsWith(`${logInstance.flowId}:first flow\n`)).toBeTrue();
     expect(streamData[1]).toEqual(`${logInstance.flowId}:first flow>0>2>2>4>✅\n`);
   });
@@ -85,7 +85,4 @@ describe("Slimo Logger", function() {
       done();
     }, 500);
   });
-
-
-
 });
