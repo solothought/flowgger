@@ -70,7 +70,7 @@ class LogProcessor{
 
   record(id, msg, time){
     const logRecord = this.#logFlows.get(id);
-    // console.log(logRecord)
+    // console.log(logRecord.seq)
     // console.log(msg)
     if(!logRecord) this.#unexpectedLog(id,msg,time);
     else{
@@ -171,7 +171,7 @@ class LogProcessor{
    */
   #updateLogMsgWithExecDuration(logRecord, msg, timeNow){
     const lastStep = logRecord.seq[logRecord.seq.length - 1]
-    lastStep.duration = lastStep.time - timeNow;
+    lastStep.duration = timeNow - lastStep.time;
     if(lastStep.duration > this.#config.maxStepExecTime){
       logRecord.logMsg += `(${lastStep.duration})>${msg}`;
     }else{
