@@ -1,15 +1,18 @@
 const {ExpirableList} = require("thds");
 const StreamHandler = require("./StreamHandler");
+const {formatDate} = require("./util");
 
 const branchSteps = ["IF", "ELSE_IF", "LOOP"];
 
 class LogFlow{
-  constructor(flowId,flowName, flowSteps){
+  constructor(flowId, flowName, flowKeyVal, flowSteps){
     this.id= flowId,
     this.currentNode= flowSteps,
-    this.seq=[{index:-1,time: Date.now()}],
-    this.logHead= `${flowId}:${flowName}`,
-    this.logMsg= `${flowId}:${flowName}`,
+    this.seq=[{index:-1,time: Date.now()}];
+    const dt = formatDate(Date.now());
+    this.logHead= `${flowId},${dt},${flowName}`;
+    this.logMsg= this.logHead;
+    // if(flowKeyVal) this.logMsg += `(${flowKeyVal})`;
     this.failed= false
   }
 }
@@ -23,7 +26,9 @@ const defaultConfig = {
   maxFlowExecTime: 10000, //for a flow 
   maxStepExecTime: 200,    //for a step
   // maxStepExecTime: 5000,    //for a step
-  maxHaltedFlows: 500     //for flows didn't end in expected time
+  maxHaltedFlows: 500,     //for flows didn't end in expected time
+
+  logDuration: 2, //0: never, 1: always, 2: when cross threshold
 }
 class LogProcessor{
   #config;
@@ -61,16 +66,16 @@ class LogProcessor{
       ,flow.headers); 
     
     const flowId = Date.now();
-    const logRecord = new LogFlow(flowId, flowName, flow.steps);
+    const logRecord = new LogFlow(flowId, flowName, flowKeyVal, flow.steps);
     this.#logFlows.add(flowId, logRecord, meta.maxStepExecTime);
-    this.#sh.log("headStream",`${this.formatDate(Date.now())}:${logRecord.logHead}`);
+    this.#sh.log("headStream",`${logRecord.logHead}`);
     return flowId;
   }
 
 
   record(id, msg, time){
     const logRecord = this.#logFlows.get(id);
-    // console.log(logRecord.seq)
+    // console.log(logRecord)
     // console.log(msg)
     if(!logRecord) this.#unexpectedLog(id,msg,time);
     else{
@@ -172,10 +177,13 @@ class LogProcessor{
   #updateLogMsgWithExecDuration(logRecord, msg, timeNow){
     const lastStep = logRecord.seq[logRecord.seq.length - 1]
     lastStep.duration = timeNow - lastStep.time;
-    if(lastStep.duration > this.#config.maxStepExecTime){
-      logRecord.logMsg += `(${lastStep.duration})>${msg}`;
+    if(this.#config.logDuration === 1){ //always
+      logRecord.logMsg += `:${lastStep.duration},${msg}`;
+    }else if(this.#config.logDuration === 2 
+      && lastStep.duration > this.#config.maxStepExecTime){
+      logRecord.logMsg += `:${lastStep.duration},${msg}`;
     }else{
-      logRecord.logMsg += `>${msg}`
+      logRecord.logMsg += `,${msg}`
     }
   }
   flush(id){
@@ -185,7 +193,7 @@ class LogProcessor{
     this.#logFlows.removeEntry(id);
   }
   flushAll(data){
-    this.#sh.log("errStream", `Flushing all messages at ${this.formatDate(Date.now())}`);
+    this.#sh.log("errStream", `Flushing all messages at ${formatDate(Date.now())}`);
     this.#sh.log("errStream", data); //TODO stringify it
 
     this.#logFlows.forEachNonExpired((k,v)=>{
@@ -201,10 +209,6 @@ class LogProcessor{
   
   #unexpectedLog(msg, time){
     console.log("late:", msg)
-  }
-
-  formatDate(time){ //TODO: format as per config
-    return time;
   }
 
   /**

@@ -1,6 +1,6 @@
 const Logger = require("./../src/SlimoLogger");
 const path = require("path");
-
+const {formatDate} = require("./../src/util");
 
 let streamData = [];
 class MyStream {
@@ -8,7 +8,7 @@ class MyStream {
   }
 
   write(chunk, encoding, callback) {
-    console.log(chunk)
+    // console.log(chunk)
     streamData.push(chunk);
     // callback();
   }
@@ -39,7 +39,7 @@ describe("Slimo Logger", function() {
     logInstance.info("mark it complete")
     //assert mystream
     // console.log(streamData);
-    expect(streamData[0].endsWith(`${logInstance.flowId}:second flow(2)\n`)).toBeTrue();
-    expect(streamData[1]).toEqual(`${logInstance.flowId}:second flow(2)>0>2>2>4>✅\n`);
+    expect(streamData[0].endsWith(`${logInstance.flowId},${formatDate(logInstance.flowId)},second flow(2)\n`)).toBeTrue();
+    expect(streamData[1]).toEqual(`${logInstance.flowId},${formatDate(logInstance.flowId)},second flow(2),0,2,2,4,✅\n`);
   });
 });
