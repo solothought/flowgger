@@ -23,12 +23,14 @@ function findStartSteps(flow){
 }
 
 /**
- * 
+ * Remove branch steps to reduce total number of steps
+ * Add step index for direct access
+ * add startSteps
  * @param {{steps:object[],links:object} flow 
  * @returns {{steps:object[],links:object,startSteps:Set,stepsIndex:object}}
  */
 export function normalizeLinks(flow) {
-  flow.startSteps = findStartSteps(flow);
+  flow.startSteps = Array.from(findStartSteps(flow));
   const { steps, links } = flow;
   const stepsIndex = {};
   const suppressedLinks= {};//links for non-branch steps only

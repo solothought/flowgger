@@ -1,6 +1,17 @@
-function formatDate(timestamp){
+import fs from "fs";
+
+export function formatDate(timestamp){
+  if(!timestamp) timestamp = Date.now();
   const currentDate = new Date(timestamp);
   return currentDate.toISOString();
 }
-
-module.exports = {formatDate}
+export function isValidDir(dirPath){
+  try {
+    if (!dirPath || !fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
+      return false
+    }
+  } catch (err) {
+    return false
+  }
+  return true;
+}
