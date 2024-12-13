@@ -39,27 +39,23 @@ export const deaultConfig = {
 };
 
 export function validateConfig(config) {
-  if (!config.logging || !config.logging.streams || !Array.isArray(config.logging.streams.flows)) {
-    throw new Error('Mandatory property logging.streams.flows is missing or not an array.');
+  const hasFlowsAppender = config.appenders.some(appenderConfig => {
+    const onlyForTypes = appenderConfig.onlyFor?.types || [];
+    const notForTypes = appenderConfig.notFor?.types || [];
+
+    if (onlyForTypes.includes('flows') || !notForTypes.includes('flows')) {
+      return true;
+    }else return false;
+  });
+
+  if (!hasFlowsAppender) {
+    throw new FlowggerError("No appender supports 'flows' type.");
   }
+
   if (!config.flow || typeof config.flow.source !== 'string') {
     //TODO: let user add content as string
     throw new Error('Mandatory property flow.source is missing or not a string.');
   }
-
-  const appenders = config.logging.appenders || {};
-  Object.keys(config.logging.streams).forEach(stream => {
-    config.logging.streams[stream].forEach(appenderName => {
-      if (!appenders[appenderName]) {
-        throw new FlowggerError(`Appender '${appenderName}' specified in streams.${stream} not defined in appenders.`);
-      }
-    });
-  });
-  Object.values(config.logging.appenders).forEach(appender => {
-    if ('onlyFor' in appender && 'notFor' in appender) {
-      throw new FlowggerError('Appender cannot have both onlyFor and notFor filters.');
-    }
-  });
 }
 
 export function deepMerge(target, ...sources) {

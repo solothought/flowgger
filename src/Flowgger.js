@@ -19,7 +19,7 @@ export default class Flowgger {
     //read flows
     const flowsReader = new FlowsReader(this.config);
     flowsReader.readFlows();
-    attacheAppenderToFlow(flowsReader.flows, this.config.logging);
+    attacheAppenderToFlow(flowsReader.flows, this.config);
     
     // console.debug(flowsReader.flows);
     this.logProcessor = new LogProcessor(this.config, flowsReader.flows);
@@ -44,18 +44,23 @@ export default class Flowgger {
    * 2) need not to find relevant appender at run time 
    * @param {object} flows 
    */
-function attacheAppenderToFlow(flows, loggingConfig){
+function attacheAppenderToFlow(flows, loggingConfig) {
   const env = process.env.NODE_ENV || 'default';
-  const logStreams = loggingConfig.streams;
-  for(const flowName in flows){
+
+  for (const flowName in flows) {
     const flow = flows[flowName];
-    Object.keys(logStreams).forEach(stream => {
-      logStreams[stream].forEach(appenderName => {
-        const appenderConfig = loggingConfig.appenders[appenderName];
-        if (shouldAttachAppender(appenderConfig, flow, env)) {
-          flow.streams[stream].push(appenderConfig.handler);
-        }
-      });
+
+    loggingConfig.appenders.forEach(appenderConfig => {
+      if (shouldAttachAppender(appenderConfig, flow, env)) {
+        const types = appenderConfig.onlyFor?.types || [];
+
+        types.forEach(type => {
+          if (!flow.streams[type]) {
+            flow.streams[type] = [];
+          }
+          flow.streams[type].push(appenderConfig.handler);
+        });
+      }
     });
   }
 }
@@ -80,7 +85,8 @@ function shouldAttachAppender(appenderConfig, flow, env) {
       && !appenderConfig.onlyFor.flows.includes('*')) {
       return false;
     }
-  } else if ('notFor' in appenderConfig) {
+  }
+  if ('notFor' in appenderConfig) {
     if (appenderConfig.notFor.env 
       && (appenderConfig.notFor.env.includes(env) 
         || appenderConfig.notFor.env.includes('*'))) {

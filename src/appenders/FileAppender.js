@@ -28,15 +28,15 @@ export class FileAppender extends BaseAppender{
     // this.priorityBuffer = [];
 
     this.currentRollTime = new Date();
-    this.stream = this.createStream();
+    this.stream = this.#createStream();
     this.isWriting = false;   // To track busy stream
     this.pendingRoll = false; // To track deferred rollovers
 
     //periodically flush buffer for old entries. If writing is in progress, it'll be skipped.
-    this.flushIntervalId = setInterval(() => this.processQueue(true), this.config.flushInterval);
+    this.flushIntervalId = setInterval(() => this.#processQueue(true), this.config.flushInterval);
 
     // Set initial rollover timer
-    const timeUntilNextRoll = this.nextRollTime();
+    const timeUntilNextRoll = this.#nextRollTime();
     this.rolloverTimer = setTimeout(() => this.#updateLogFile(), timeUntilNextRoll);
   }
 
@@ -62,19 +62,19 @@ export class FileAppender extends BaseAppender{
     }else{
       this.isWriting = true; //this will stop `processQueue` to run
       this.stream.end();
-      this.stream = this.createStream();
+      this.stream = this.#createStream();
       this.currentRollTime = new Date();
       this.isWriting = false;
       this.pendingRoll = false; 
     }
 
     // Reset rollover timer
-    const timeUntilNextRoll = this.nextRollTime();
+    const timeUntilNextRoll = this.#nextRollTime();
     clearTimeout(this.rolloverTimer); // Clear previous timer
     this.rolloverTimer = setTimeout(() => this.#updateLogFile(), timeUntilNextRoll);
 
   }
-  nextRollTime(){ //to set in timer
+  #nextRollTime(){ //to set in timer
     switch (this.config.rollOn) {
       case "daily":
         const nextMidnight = new Date(this.currentRollTime);
@@ -87,7 +87,7 @@ export class FileAppender extends BaseAppender{
         return nextHour - this.currentRollTime.getTime();
     }
   }
-  createStream(){
+  #createStream(){
     return fs.createWriteStream(this.#getLogFileName(), { flags: "a" });
   }
 
@@ -98,7 +98,7 @@ export class FileAppender extends BaseAppender{
    * @param {string} after 
    * @param {boolean} immediateWrite
    */
-  async write(logMsg, before = "", after = "", immediateWrite = false) {
+  async append(logMsg, before = "", after = "", immediateWrite = false) {
     const logEntry = `${before}${stringify(logMsg)}${after}\n`;
     // TODO: size implementation
     // this.logSize += logEntry.length; //TODO: flush buffer once reach to a limit
@@ -107,17 +107,17 @@ export class FileAppender extends BaseAppender{
     //    create new logfile with increasing index.
 
     if(immediateWrite){
-      await this.writeToStream(logEntry);
+      await this.#writeToStream(logEntry);
     }else{
       this.buffer.push(logEntry);
       if ( !this.isWriting) {
-        await this.processQueue();
+        await this.#processQueue();
       }
     }
   }
   
 
-  async processQueue(makeEmpty = false) {
+  async #processQueue(makeEmpty = false) {
     if (this.isWriting) return;
 
     this.isWriting = true;
@@ -130,14 +130,14 @@ export class FileAppender extends BaseAppender{
       // chunking will also help for "size" rollOn strategy.
       const batch = this.buffer.slice(start, start + this.config.batchSize); // Read batch
       start += this.config.batchSize; // Advance start index
-      await this.writeToStream(batch.join(""));
+      await this.#writeToStream(batch.join(""));
     }
 
     // Process remaining logs if buffer is non-empty
     if (makeEmpty && this.buffer.length - start > 0) {
       const remainingLogs = this.buffer.splice(0); // Take all remaining logs
       start += remainingLogs.length;
-      await this.writeToStream(remainingLogs.join(""));
+      await this.#writeToStream(remainingLogs.join(""));
     }
 
     this.buffer = this.buffer.slice(start); // Clean up processed elements
@@ -157,7 +157,7 @@ export class FileAppender extends BaseAppender{
  * @param {string} after
  * @returns 
  */
-  writeToStream(data) {
+  #writeToStream(data) {
     return new Promise((resolve, reject) => {
       this.stream.write(data, (err) => {
         if (err) {

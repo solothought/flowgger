@@ -49,7 +49,7 @@ export default class LogProcessor{
 
   constructor(config, flows){
     this.#config = {
-      flows: config.flows,
+      flow: config.flow,
       layout: {
         logStepDuration: freq.indexOf(config.layout.stepDuration),
       }
@@ -220,7 +220,7 @@ export default class LogProcessor{
         logRecord.stepsSeq += `[${currentStepIndex},${duration}]`;
         break;
       case 2: //EXCEED
-        if(duration > this.#config.flows.maxIdleTime)
+        if(duration > this.#config.flow.maxIdleTime)
           logRecord.stepsSeq += `[${currentStepIndex},${duration}]`;
         else
           logRecord.stepsSeq += `[${currentStepIndex}]`
@@ -331,6 +331,6 @@ function logId(){
  */
 function log(msg, before, after, appenders, immediate = false){
   appenders.forEach(appender => {
-    appender.write(msg, before, after, immediate);
+    appender.append(msg, before, after, immediate);
   });
 }
