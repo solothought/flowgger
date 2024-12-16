@@ -10,17 +10,12 @@ class FlowLog{
     this.name = flowName;
     this.nextExpecteSteps = flowObj.startSteps;
     this.startTime = Date.now();
-    this.lastStep= {id: -1, startTime: this.startTime}; //sequence of msg passed by user
+    this.lastStep= {id: -1, startTime: this.startTime};
     const dt = formatDate(this.startTime);
-    this.logHead= `"${flowId}",${dt},"${flowName}"`;
-    this.stepsSeq= ""; // [[step id, exe time], [step id, exe time]]
+    this.stepsSeq= []; // [[step id, exe time], [step id, exe time]]
     this.failed= false;
     this.parentFlow = parentFlow;
-    this.logTail = "";
     this.errMsg = "";
-    if(parentFlow){
-      this.logTail= `,${parentFlow.id},${parentFlow.lastStep().index}`;
-    }
   }
 
   isExceed(threshold){
@@ -30,12 +25,40 @@ class FlowLog{
     return this.parentFlow.seq[this.parentFlow.seq.length-1];
   }
 
-  buildLogMsg(){
-    return `[${this.logHead},[${this.stepsSeq}],${Date.now()-this.startTime},"${this.failed ? '❌':'✅' }","${this.errMsg}"]`
+  headLog(){
+    const response = {
+      id: this.id,
+      flowName: this.name,
+      reportTime: this.startTime,
+    }
+    if(this.parentFlow){
+      response.parentFlowId = this.parentFlow.id;
+      response.parentStepId = this.parentFlow.seq[this.parentFlow.seq.length-1];
+    }
+    return response;
   }
-  buildMsgHead(errMsg){
-    return `"${this.id}",${formatDate()},${this.lastStep.id}`;
-    // return `["${flowId}",${formatDate()},${this.lastStep.id},"${errMsg || this.errMsg}"]`;
+
+  flowLog(){
+    const response =  {
+      status: this.failed ? '❌':'✅',
+      flowName: this.name,
+      id: this.id,
+      reportTime: this.startTime,
+      steps: this.stepsSeq,
+      errMsg: this.errMsg // when status is failed
+    }
+    if(this.parentFlow){
+      response.parentFlowId = this.parentFlow.id
+      response.parentStepId = this.parentFlow.seq[this.parentFlow.seq.length-1]
+    }
+    return response;
+  }
+  dataLog(data){
+    return {
+      id: this.id,
+      lastStepId: this.lastStep.id,
+      data: data
+    }
   }
 
 }
@@ -59,6 +82,7 @@ export default class LogProcessor{
     this.#logFlows = {};
     this.#flows = flows;
     // console.debug(this.#flows);
+    // console.debug(this.#flows["second flow(1)"]);
     this.logDebug = this.recordData;
     this.logWarn = this.recordWarn;
   }
@@ -82,15 +106,17 @@ export default class LogProcessor{
     const flowId = logId();
     const logRecord = new FlowLog(flow, flowId, flowName, parentFlow);
     this.#logFlows[flowId] = logRecord;
-    log(`[${logRecord.logHead}${logRecord.logTail}]`, "", "",flow.streams["head"], true);
+
+    //acknowledge
+    log(logRecord.headLog(),flow.streams["head"],"trace");
+    
     return logRecord;
   }
-
 
   record(flowLog, msg){
     // Log record would be removed on incorrect logging
     // or if dead-end step is logged
-    // Hence, it needs to be checked on each call
+    // Hence, it needs to be confirmed on each call
     if(this.#logFlows[flowLog.id]){
       this.#updateLogRecord(flowLog, msg);
     }else{
@@ -106,11 +132,11 @@ export default class LogProcessor{
   recordErr(logRecord, errMsg){
     const flow = this.#flows[logRecord.name];
     if(flow.paused) return;
-    log(errMsg, `[${logRecord.buildMsgHead()},`, ']',flow.streams["error"], true);
+    log(logRecord.dataLog(errMsg),flow.streams["error"], "error");
   }
   /**
    * Log additional data to data stream which is not the part of the flow
-   * @param {FlowLog} flow LogFow record
+   * @param {FlowLog} logRecord LogFow record
    * @param {any} data data to log 
    * @param {string} key to enable/disable logging at runtime 
    */
@@ -118,26 +144,23 @@ export default class LogProcessor{
     if(key && this.pausedKeys.has(key)) return;
     const flow = this.#flows[logRecord.name];
     if(flow.paused) return;
-    
-    log(data, `[${logRecord.buildMsgHead()},`, ']',flow.streams["data"]);
+    log(logRecord.dataLog(data),flow.streams["data"],"debug");
   }
   /**
    * Log additional data to data stream which is not the part of the flow
-   * @param {FlowLog} flow LogFow record
+   * @param {FlowLog} logRecord LogFow record
    * @param {any} data data to log 
    */
   recordWarn(logRecord, data){
     const flow = this.#flows[logRecord.name];
     if(flow.paused) return;
-    log(data, `[${logRecord.buildMsgHead()},`, `,⚠️]`,flow.streams["data"]);
+    log(logRecord.dataLog(data),flow.streams["data"],"warn");
   }
 
   /**
    * A dummy method for dynamic pause
    */
-  noLog(){
-
-  }
+  noLog(){  }
   /**
    * Signal the ending of a flow.
    * It helps to flush a log record immediately. 
@@ -212,23 +235,7 @@ export default class LogProcessor{
   //TODO: decide at start time
   #logStepSeq(logRecord, currentStepIndex, timeNow){
     const duration = timeNow - logRecord.lastStep.startTime;
-
-    if(logRecord.stepsSeq.length > 0) logRecord.stepsSeq += ",";
-
-    switch(this.#config.layout.logStepDuration){
-      case 0: //ALWAYS
-        logRecord.stepsSeq += `[${currentStepIndex},${duration}]`;
-        break;
-      case 2: //EXCEED
-        if(duration > this.#config.flow.maxIdleTime)
-          logRecord.stepsSeq += `[${currentStepIndex},${duration}]`;
-        else
-          logRecord.stepsSeq += `[${currentStepIndex}]`
-        break;
-      default: //NEVER
-        logRecord.stepsSeq += `[${currentStepIndex}]`
-        break;
-    }
+    logRecord.stepsSeq.push([currentStepIndex,duration]);
   }
 
 
@@ -239,18 +246,20 @@ export default class LogProcessor{
    */
   flush(logRecord){
     const flow = this.#flows[logRecord.name];
-    log(logRecord.buildLogMsg(),"","",flow.streams["flows"]);
+    log(logRecord.flowLog(),flow.streams["flows"], "info");
     delete this.#logFlows[logRecord.id];
   }
 
   flushAll(data){
-    log(`[ "Flushing all messages at ${formatDate()}"]`,"","",flow.streams["error"], true);
-    log(data, "", "", flow.streams["error", true]);
+    log(`Flushing all messages at ${formatDate()}`,flow.streams["error"], "error");
+    log(data, flow.streams["error"], "error");
 
     for(const logid in this.#logFlows){
       const flowLog = this.#logFlows[logId];
-      const logMsgBefore = `["${flowLog.id}",${formatDate()},${flowLog.seq[flowLog.seq.length-1].index}`;
-      log(flowLog.logMsg, logMsgBefore, "]",flow.streams["error"], true);
+      log({
+         id:flowLog.id,
+         steps:flowLog.stepsSeq
+        },flow.streams["error"], "error");
     }
     this.#logFlows = {};
   }
@@ -324,13 +333,12 @@ function logId(){
 
 /**
  * log a message to all appenders
- * @param {any} msg 
- * @param {string} before 
- * @param {string} after 
+ * @param {object} logRecord 
  * @param {Array} appenders 
+ * @param {string} level info|trace|debug|warn|error 
  */
-function log(msg, before, after, appenders, immediate = false){
+function log(logRecord, appenders, level){
   appenders.forEach(appender => {
-    appender.append(msg, before, after, immediate);
+    appender.append(logRecord, level);
   });
 }

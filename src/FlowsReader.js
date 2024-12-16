@@ -49,6 +49,7 @@ export default class FlowsReader{
           console.warn(`${dHeader} is not given for "${flow.name}"`);
         }
       }
+      flow.uName = uName;
       newFlows[uName] = flow;
       this.#updateExecutionTime(flow);
     });

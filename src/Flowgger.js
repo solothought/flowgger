@@ -1,7 +1,7 @@
 import LogProcessor from "./LogProcessor.js";
 import FlowLogger from "./FlowLogger.js";
 import FlowsReader from "./FlowsReader.js";
-import {deaultConfig, deepMerge, validateConfig} from "./ConfigBuilder.js";
+import {deaultConfig, validateConfig} from "./ConfigBuilder.js";
 
 
 

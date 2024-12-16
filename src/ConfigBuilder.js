@@ -52,9 +52,21 @@ export function validateConfig(config) {
     throw new FlowggerError("No appender supports 'flows' type.");
   }
 
+  //All appender must have 'append' method
+  config.appenders.forEach(appenderConfig => {
+    if(!appenderConfig.handler || !appenderConfig.handler.append){
+      throw new FlowggerError("Invalid handler. Appender must have 'append' method");
+    }
+    if(appenderConfig.layout){
+      appenderConfig.handler.layout = appenderConfig.layout
+    }else{
+      appenderConfig.handler.layout = a => a;
+    }
+  })
+
   if (!config.flow || typeof config.flow.source !== 'string') {
     //TODO: let user add content as string
-    throw new Error('Mandatory property flow.source is missing or not a string.');
+    throw new FlowggerError('Mandatory property flow.source is missing or not a string.');
   }
 }
 

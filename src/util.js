@@ -15,3 +15,11 @@ export function isValidDir(dirPath){
   }
   return true;
 }
+
+export function stringify(d){
+  if (typeof d === "object") {
+    stream.write(JSON.stringify(d));
+  } else {
+    stream.write(String(d));
+  }
+}
