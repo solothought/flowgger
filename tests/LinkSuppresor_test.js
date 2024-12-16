@@ -51,9 +51,9 @@ describe("LinkSuppressor", function() {
     // console.log(flow.links);
     // console.log(flow.stepsIndex);
 
-    expect(flow.startSteps.size).toEqual(2);
-    expect(flow.startSteps.has(1)).toBeTrue();
-    expect(flow.startSteps.has(6)).toBeTrue();
+    expect(flow.startSteps.length).toEqual(2);
+    expect(flow.startSteps.includes(1)).toBeTrue();
+    expect(flow.startSteps.includes(6)).toBeTrue();
     expect(flow.stepsIndex).toEqual(expectedStepsIndex);
     expect(flow.links).toEqual(expectedLinks);
   });
