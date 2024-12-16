@@ -52,7 +52,15 @@ function attacheAppenderToFlow(flows, loggingConfig) {
 
     loggingConfig.appenders.forEach(appenderConfig => {
       if (shouldAttachAppender(appenderConfig, flow, env)) {
-        const types = appenderConfig.onlyFor?.types || [];
+        let types = new Set(["flows","head","data","error"]);
+        if(appenderConfig.onlyFor?.types){
+          types = new Set(appenderConfig.onlyFor?.types);
+        }
+        if(appenderConfig.notFor?.types){
+          appenderConfig.notFor?.types.forEach(type => {
+            types.delete(type);
+          })
+        }
 
         types.forEach(type => {
           if (!flow.streams[type]) {
@@ -73,7 +81,7 @@ function attacheAppenderToFlow(flows, loggingConfig) {
  * @returns 
  */
 function shouldAttachAppender(appenderConfig, flow, env) {
-  if ('onlyFor' in appenderConfig) {
+  if (appenderConfig.onlyFor) {
     if (appenderConfig.onlyFor.env 
       && !appenderConfig.onlyFor.env.includes(env) 
       && !appenderConfig.onlyFor.env.includes('*')) {
@@ -86,7 +94,7 @@ function shouldAttachAppender(appenderConfig, flow, env) {
       return false;
     }
   }
-  if ('notFor' in appenderConfig) {
+  if (appenderConfig.notFor) {
     if (appenderConfig.notFor.env 
       && (appenderConfig.notFor.env.includes(env) 
         || appenderConfig.notFor.env.includes('*'))) {
