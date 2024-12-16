@@ -1,5 +1,5 @@
 export class BaseAppender {
-  append(message, before = "", after = "") {
-    throw new Error("writeLog() must be implemented by subclasses");
+  append(logRecord, level) {
+    throw new Error("append() must be implemented by subclasses");
   }
 }
