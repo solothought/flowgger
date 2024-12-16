@@ -77,6 +77,8 @@ export default class LogProcessor{
     // console.debug(this.#flows["second flow(1)"]);
     this.logDebug = this.recordData;
     this.logWarn = this.recordWarn;
+    this.logError = this.recordErr;
+    this.pausedKeys = new Set();
   }
 
   /**
@@ -265,21 +267,20 @@ export default class LogProcessor{
       this.pausedKeys = new Set(pauseConfig.keys); 
     }
     if(Array.isArray(pauseConfig.flows)){
-      //set paused flag in flows to reduce comparisons
       const flowNames = Object.keys(this.#flows);
       for (let i = 0; i < flowNames.length; i++) {
-        const flow = flowNames[i];
-        if(pauseConfig.flows.includes(flow.name)) flow.paused = true;
+        const flow = this.#flows[flowNames[i]];
+        if(pauseConfig.flows.includes(flow.uName)) flow.paused = true;
       }
     }
-    if(Array.isArray(pauseConfig.levels)){
+    if(Array.isArray(pauseConfig.types)){
       //assign record methods with 'noLog' to reduce runtime comparisons
       //only debug, warn are supported
-      if(pauseConfig.levels.includes("debug")){
+      if(pauseConfig.types.includes("data")){
         this.logDebug = this.noLog;
-      }
-      if(pauseConfig.levels.includes("warn")){
         this.logWarn = this.noLog;
+      }else if(pauseConfig.types.includes("error")){
+        this.logError = this.noLog;
       }
     }
     // if(Array.isArray(pauseConfig.appenders)){
@@ -299,21 +300,18 @@ export default class LogProcessor{
       })
     }
     if(Array.isArray(playConfig.flows)){
-      //set paused flag in flows to reduce comparisons
       const flowNames = Object.keys(this.#flows);
       for (let i = 0; i < flowNames.length; i++) {
-        const flow = flowNames[i];
-        if(playConfig.flows.includes(flow.name)) flow.paused = false;
+        const flow = this.#flows[flowNames[i]];
+        if(playConfig.flows.includes(flow.uName)) flow.paused = false;
       }
     }
-    if(Array.isArray(playConfig.levels)){
-      //assign record methods with 'noLog' to reduce runtime comparisons
-      //only debug, warn are supported
-      if(playConfig.levels.includes("debug")){
+    if(Array.isArray(playConfig.types)){
+      if(playConfig.types.includes("data")){
         this.logDebug = this.recordData;
-      }
-      if(playConfig.levels.includes("warn")){
         this.logWarn = this.recordWarn;
+      }else if(playConfig.types.includes("error")){
+        this.logError = this.recordErr;
       }
     }
   }

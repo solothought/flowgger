@@ -30,7 +30,7 @@ export default class FlowLogger{
   error(msg){
     if(typeof msg !== "string") 
       throw Error(`error method supports only string. and it must be present in ${this.flowName}`);
-    this.lp.recordErr(this.flow, msg);
+    this.lp.logError(this.flow, msg);
   }
   /**
    * Use to log extra information
