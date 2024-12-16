@@ -11,7 +11,6 @@ class FlowLog{
     this.nextExpecteSteps = flowObj.startSteps;
     this.startTime = Date.now();
     this.lastStep= {id: -1, startTime: this.startTime};
-    const dt = formatDate(this.startTime);
     this.stepsSeq= []; // [[step id, exe time], [step id, exe time]]
     this.failed= false;
     this.parentFlow = parentFlow;
@@ -63,20 +62,13 @@ class FlowLog{
 
 }
 
-const freq = [ "ALWAYS", "NEVER", "EXCEED"];
-
 export default class LogProcessor{
-  #config;
+  // #config;
   #logFlows; //ExpirableList
   #flows;    //flows{} from .stflow files (key: flowname+headerkey)
 
   constructor(config, flows){
-    this.#config = {
-      flow: config.flow,
-      layout: {
-        logStepDuration: freq.indexOf(config.layout.stepDuration),
-      }
-    };
+    // this.#config = config;
     //TODO: decide he capacity of each queue base on avg run time or number of items in queues
     // this.queues = 
     this.#logFlows = {};
