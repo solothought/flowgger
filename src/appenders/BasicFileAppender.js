@@ -97,9 +97,15 @@ export class FileAppender extends BaseAppender {
 
   /**
    * Write to file stream
-   * @param {string} logMsg 
+   * @param {string} logRecord 
    */
-  async append(logMsg) {
+  async append(logRecord, level) {
+    let logMsg = "";
+    if(typeof this.layout === "function"){
+      logMsg = this.layout(logRecord, level);
+    }else{
+      logMsg = this.layout[level](logRecord);
+    }
     this.buffer.push(logMsg);
     if (!this.isWriting) {
       await this.#processQueue();
