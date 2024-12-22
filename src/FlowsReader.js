@@ -32,7 +32,7 @@ export default class FlowsReader{
   }
 
   #addFlow(moreFlows){
-    const dHeader = this.config.flow.discriminationHeader;
+    const dHeader = "version";
     const newFlows = {};
     // const flowNames = Object.keys(this.flows);
     moreFlows.forEach( flow => {

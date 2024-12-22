@@ -30,7 +30,6 @@ describe("Flowgger", function() {
       ],
       flow: {
         source: path.resolve("./tests/flows"),
-        discriminationHeader: "v",
       }
     };
     

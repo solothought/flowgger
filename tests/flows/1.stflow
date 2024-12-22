@@ -10,7 +10,7 @@ LOOP 4 times
 
 
 FLOW: second flow
-v: 2
+version: 2
 this is the another flow
 LOOP 4 times
   until the next condition is true
@@ -19,7 +19,7 @@ LOOP 4 times
     STOP
 
 FLOW: second flow
-v: 1
+version: 1
 this is the also another flow
 LOOP 4 times
   until the next condition is true
