@@ -29,7 +29,7 @@ describe("Flowgger", function() {
       {
         handler: flowsAppender,
         layout: lr => { //can be a function or object
-          return `${lr.status},${lr.id},${lr.reportTime},${lr.flowName},${lr.steps}`;
+          return `${lr.success},${lr.id},${lr.reportTime},${lr.flowName},${lr.steps}`;
         },
         onlyFor: {
           types: ["flows"],
@@ -93,7 +93,7 @@ describe("Flowgger", function() {
     // console.log(errAppender.streamData);
     
     // expect(testAppender.streamData[0].endsWith(`${flow.flowId},${formatDate(flow.flowId)},first flow\n`)).toBeTrue();
-    // expect(testAppender.streamData[1]).toEqual(`${flow.flowId},${formatDate(flow.flowId)},first flow,0,2,2,4,✅\n`);
+    // expect(testAppender.streamData[1]).toEqual(`${flow.flowId},${formatDate(flow.flowId)},first flow,0,2,2,4,true\n`);
   });
 
   

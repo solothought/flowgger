@@ -5,9 +5,11 @@ import FlowggerError from "./FlowggerError.js";
  * Holds info of a flow in progress.
  */
 class FlowLog{
-  constructor(flowObj, flowId, flowName, parentFlow){
+  constructor(flowObj, flowId, key, flowName, version, parentFlow){
     this.id= flowId,
     this.name = flowName;
+    this.key = key;
+    this.version = version;
     this.nextExpecteSteps = flowObj.startSteps;
     this.startTime = Date.now();
     this.lastStep= {id: -1, startTime: this.startTime};
@@ -28,6 +30,7 @@ class FlowLog{
     const response = {
       id: this.id,
       flowName: this.name,
+      version: this.version,
       reportTime: this.startTime,
     }
     if(this.parentFlow){
@@ -39,12 +42,13 @@ class FlowLog{
 
   flowLog(){
     const response =  {
-      status: this.failed ? '❌':'✅',
+      success: this.failed ? false: true,
       flowName: this.name,
+      version: this.version,
       id: this.id,
       reportTime: this.startTime,
       steps: this.stepsSeq,
-      errMsg: this.errMsg // when status is failed
+      errMsg: this.errMsg // when success is false
     }
     if(this.parentFlow){
       response.parentFlowId = this.parentFlow.id
@@ -56,7 +60,8 @@ class FlowLog{
     return {
       id: this.id,
       lastStepId: this.lastStep.id,
-      data: data
+      data: data,
+      reportTime: Date.now(),
     }
   }
 
@@ -85,20 +90,19 @@ export default class LogProcessor{
    * Create a flow og record.
    * Write to head stream
    * @param {string} flowName name of flow defined in some .stflow file
-   * @param {string} flowKeyVal value of flow header defined in config
+   * @param {string} version value of flow header defined in config
    * @returns {FlowLog}
    */
-  register(flowName, flowKeyVal, parentFlow){
-    // validation
-      if(flowKeyVal) flowName += `(${flowKeyVal})`;
+  register(flowName, version, parentFlow){
+    let key = flowName;
+    if(version) key += `(${version})`;
 
-      const flow = this.#flows[flowName];
-      // console.debug(this.#flows);
-      if(!flow) throw new FlowggerError(`Invalid Flow name: ${flowName}, or key value`);
-    // End of validation
+    const flow = this.#flows[key];
+    // console.debug(this.#flows);
+    if(!flow) throw new FlowggerError(`Invalid Flow name: ${flowName}, or key value`);
     
     const flowId = logId();
-    const logRecord = new FlowLog(flow, flowId, flowName, parentFlow);
+    const logRecord = new FlowLog(flow, flowId, key, flowName, version, parentFlow);
     this.#logFlows[flowId] = logRecord;
 
     //acknowledge
@@ -107,14 +111,14 @@ export default class LogProcessor{
     return logRecord;
   }
 
-  record(flowLog, msg){
+  record(logRecord, msg){
     // Log record would be removed on incorrect logging
     // or if dead-end step is logged
     // Hence, it needs to be confirmed on each call
-    if(this.#logFlows[flowLog.id]){
-      this.#updateLogRecord(flowLog, msg);
+    if(this.#logFlows[logRecord.id]){
+      this.#updateLogRecord(logRecord, msg);
     }else{
-      this.recordErr(flowLog, `Unexpected step ${msg}`);
+      this.recordErr(logRecord, `Unexpected step ${msg}`);
     }
 
   }
@@ -124,7 +128,7 @@ export default class LogProcessor{
    * @param {string} errMsg Error msg to log 
    */
   recordErr(logRecord, errMsg){
-    const flow = this.#flows[logRecord.name];
+    const flow = this.#flows[logRecord.key];
     if(flow.paused) return;
     log(logRecord.dataLog(errMsg),flow.streams["error"], "error");
   }
@@ -136,7 +140,7 @@ export default class LogProcessor{
    */
   recordData(logRecord, data, key){
     if(key && this.pausedKeys.has(key)) return;
-    const flow = this.#flows[logRecord.name];
+    const flow = this.#flows[logRecord.key];
     if(flow.paused) return;
     log(logRecord.dataLog(data),flow.streams["data"],"debug");
   }
@@ -146,7 +150,7 @@ export default class LogProcessor{
    * @param {any} data data to log 
    */
   recordWarn(logRecord, data){
-    const flow = this.#flows[logRecord.name];
+    const flow = this.#flows[logRecord.key];
     if(flow.paused) return;
     log(logRecord.dataLog(data),flow.streams["data"],"warn");
   }
@@ -162,21 +166,21 @@ export default class LogProcessor{
    * @param {string} id 
    * @param {number} time 
    */
-  end(flowLog){
-    if(this.#logFlows[flowLog.id]){
-      const flowData = this.#flows[flowLog.name];
-      const links = this.#flows[flowLog.name].links[flowLog.lastStep.id];
+  end(logRecord){
+    if(this.#logFlows[logRecord.id]){
+      const flowData = this.#flows[logRecord.key];
+      const links = flowData.links[logRecord.lastStep.id];
       //check if last step was ending step
       if(links.includes(-1)){
         //end the flow
-        this.flush(flowLog);
+        this.flush(logRecord);
       }else{// invalid ending
-        flowLog.failed = true;
-        flowLog.errMsg = `Flow is ended after step: ${flowData.steps[flowLog.lastStep.id].msg}`;
+        logRecord.failed = true;
+        logRecord.errMsg = `Flow is ended after step: ${flowData.steps[logRecord.lastStep.id].msg}`;
         //log error
-        this.recordErr(flowLog,flowLog.errMsg);
+        this.recordErr(logRecord,logRecord.errMsg);
         //end the flow
-        this.flush(flowLog);
+        this.flush(logRecord);
       }
     }else{// flow object is removed
       //do nothing
@@ -190,7 +194,7 @@ export default class LogProcessor{
    * @param {string} msg 
    */
   #updateLogRecord(logRecord, msg){
-    const flow = this.#flows[logRecord.name];
+    const flow = this.#flows[logRecord.key];
     const stepIndex = flow.stepsIndex[msg];
 
     const matchedId = logRecord.nextExpecteSteps.includes(stepIndex);
@@ -239,7 +243,7 @@ export default class LogProcessor{
    * @param {FlowLog} logRecord 
    */
   flush(logRecord){
-    const flow = this.#flows[logRecord.name];
+    const flow = this.#flows[logRecord.key];
     log(logRecord.flowLog(),flow.streams["flows"], "info");
     delete this.#logFlows[logRecord.id];
   }

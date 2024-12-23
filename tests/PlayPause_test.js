@@ -2,6 +2,12 @@ import Flowgger from "../src/Flowgger.js";
 import path from "path";
 import TestAppender from "./TestAppender.js";
 
+function flowName(lr){
+  if(lr.version || lr.version === 0)
+    return `${lr.flowName}(${lr.version})`;
+  else
+    return lr.flowName;
+}
 
 describe("Flowgger", function() {
   const appender = new TestAppender();
@@ -11,8 +17,11 @@ describe("Flowgger", function() {
         {
           handler: appender,
           layout: (lr,lvl) => { //can be a function or object
+            // console.debug(lr);
+            const fName = flowName(lr)
+
             if(lvl === "trace"){
-              return lr.flowName;
+              return fName;
             }else if(lvl === "error"){
               return `${lr.data},${lr.lastStepId}`;
             }else if(lvl === "debug"){
@@ -23,7 +32,7 @@ describe("Flowgger", function() {
               lr.steps.forEach(result => {
                 seq.push(result[0]);
               })
-              return `${lr.status},${lr.flowName},[${seq}]`;
+              return `${lr.success},${fName},[${seq}]`;
             }
           }
         }
@@ -47,17 +56,17 @@ describe("Flowgger", function() {
       [ 'trace', 'second flow(2)' ],
       [ 'debug', 'extra info 1,2' ],
       [ 'debug', 'extra info 3,2' ],
-      [ 'info', '✅,first flow,[0,2,2,4]' ],
+      [ 'info', 'true,first flow,[0,2,2,4]' ],
       [ 'debug', 'extra info 5,0' ],
       [ 'debug', 'extra info 6,0' ],
-      [ 'info', '✅,second flow(1),[0,2,4]' ],
+      [ 'info', 'true,second flow(1),[0,2,4]' ],
       [ 'error', 'invalid step: this is wrong step,-1' ],
-      [ 'info', '❌,second flow(2),[]' ]
+      [ 'info', 'false,second flow(2),[]' ]
     ]    
     
     const flow = flowgger.init("first flow");
-    const flow2 = flowgger.init("second flow(1)");
-    const flow3 = flowgger.init("second flow(2)");
+    const flow2 = flowgger.init("second flow",1);
+    const flow3 = flowgger.init("second flow",2);
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
@@ -100,16 +109,16 @@ describe("Flowgger", function() {
       [ 'trace', 'second flow(1)' ],
       [ 'trace', 'second flow(2)' ],
       [ 'debug', 'extra info 1,2' ],
-      [ 'info', '✅,first flow,[0,2,2,4]' ],
+      [ 'info', 'true,first flow,[0,2,2,4]' ],
       [ 'debug', 'extra info 6,0' ],
-      [ 'info', '✅,second flow(1),[0,2,4]' ],
+      [ 'info', 'true,second flow(1),[0,2,4]' ],
       [ 'error', 'invalid step: this is wrong step,-1' ],
-      [ 'info', '❌,second flow(2),[]' ]
+      [ 'info', 'false,second flow(2),[]' ]
     ]    
     
     const flow = flowgger.init("first flow");
-    const flow2 = flowgger.init("second flow(1)");
-    const flow3 = flowgger.init("second flow(2)");
+    const flow2 = flowgger.init("second flow",1);
+    const flow3 = flowgger.init("second flow",2);
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
@@ -152,17 +161,17 @@ describe("Flowgger", function() {
       [ 'trace', 'second flow(1)' ],
       [ 'trace', 'second flow(2)' ],
       [ 'debug', 'extra info 1,2' ],
-      [ 'info', '✅,first flow,[0,2,2,4]' ],
+      [ 'info', 'true,first flow,[0,2,2,4]' ],
       [ 'error', 'extra info 5,0' ],
       [ 'debug', 'extra info 6,0' ],
-      [ 'info', '✅,second flow(1),[0,2,4]' ],
+      [ 'info', 'true,second flow(1),[0,2,4]' ],
       [ 'error', 'invalid step: this is wrong step,-1' ],
-      [ 'info', '❌,second flow(2),[]' ]
+      [ 'info', 'false,second flow(2),[]' ]
     ]    
     
     const flow = flowgger.init("first flow");
-    const flow2 = flowgger.init("second flow(1)");
-    const flow3 = flowgger.init("second flow(2)");
+    const flow2 = flowgger.init("second flow",1);
+    const flow3 = flowgger.init("second flow",2);
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2

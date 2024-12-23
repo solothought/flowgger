@@ -2,6 +2,12 @@ import Flowgger from "../src/Flowgger.js";
 import path from "path";
 import TestAppender from "./TestAppender.js";
 
+function flowName(lr){
+  if(lr.version || lr.version === 0)
+    return `${lr.flowName}(${lr.version})`;
+  else
+    return lr.flowName;
+}
 
 describe("Flowgger", function() {
   const appender = new TestAppender();
@@ -11,8 +17,10 @@ describe("Flowgger", function() {
         {
           handler: appender,
           layout: (lr,lvl) => { //can be a function or object
+            const fName = flowName(lr)
+
             if(lvl === "trace"){
-              return lr.flowName;
+              return fName;
             }else if(lvl === "error"){
               return `${lr.data},${lr.lastStepId}`;
             }else{
@@ -21,7 +29,7 @@ describe("Flowgger", function() {
               lr.steps.forEach(result => {
                 seq.push(result[0]);
               })
-              return `${lr.status},${lr.flowName},[${seq}]`;
+              return `${lr.success},${fName},[${seq}]`;
             }
           }
         }
@@ -45,14 +53,14 @@ describe("Flowgger", function() {
     const expected = [
       [ 'trace', 'second flow(1)' ],
       [ 'trace', 'second flow(2)' ],
-      [ 'info', '✅,second flow(1),[0,2,4]' ],
+      [ 'info', 'true,second flow(1),[0,2,4]' ],
       [ 'error', 'invalid step: this is wrong step,-1' ],
-      [ 'info', '❌,second flow(2),[]' ]
+      [ 'info', 'false,second flow(2),[]' ]
     ]    
     
     const flow = flowgger.init("first flow");
-    const flow2 = flowgger.init("second flow(1)");
-    const flow3 = flowgger.init("second flow(2)");
+    const flow2 = flowgger.init("second flow",1);
+    const flow3 = flowgger.init("second flow",2);
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
@@ -83,12 +91,12 @@ describe("Flowgger", function() {
     
     const expected = [
       [ 'trace', 'first flow' ],
-      [ 'info', '✅,first flow,[0,2,2,4]' ]
+      [ 'info', 'true,first flow,[0,2,2,4]' ]
     ]    
     
     const flow = flowgger.init("first flow");
-    const flow2 = flowgger.init("second flow(1)");
-    const flow3 = flowgger.init("second flow(2)");
+    const flow2 = flowgger.init("second flow",1);
+    const flow3 = flowgger.init("second flow",2);
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
@@ -118,15 +126,15 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'info', '✅,first flow,[0,2,2,4]' ],
-      [ 'info', '✅,second flow(1),[0,2,4]' ],
+      [ 'info', 'true,first flow,[0,2,2,4]' ],
+      [ 'info', 'true,second flow(1),[0,2,4]' ],
       [ 'error', 'invalid step: this is wrong step,-1' ],
-      [ 'info', '❌,second flow(2),[]' ]
+      [ 'info', 'false,second flow(2),[]' ]
     ]    
     
     const flow = flowgger.init("first flow");
-    const flow2 = flowgger.init("second flow(1)");
-    const flow3 = flowgger.init("second flow(2)");
+    const flow2 = flowgger.init("second flow",1);
+    const flow3 = flowgger.init("second flow",2);
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
@@ -162,8 +170,8 @@ describe("Flowgger", function() {
     ]    
     
     const flow = flowgger.init("first flow");
-    const flow2 = flowgger.init("second flow(1)");
-    const flow3 = flowgger.init("second flow(2)");
+    const flow2 = flowgger.init("second flow",1);
+    const flow3 = flowgger.init("second flow",2);
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
@@ -200,8 +208,8 @@ describe("Flowgger", function() {
     ]    
     
     const flow = flowgger.init("first flow");
-    const flow2 = flowgger.init("second flow(1)");
-    const flow3 = flowgger.init("second flow(2)");
+    const flow2 = flowgger.init("second flow",1);
+    const flow3 = flowgger.init("second flow",2);
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2

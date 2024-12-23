@@ -2,6 +2,12 @@ import Flowgger from "../src/Flowgger.js";
 import path from "path";
 import TestAppender from "./TestAppender.js";
 
+function flowName(lr){
+  if(lr.version || lr.version === 0)
+    return `${lr.flowName}(${lr.version})`;
+  else
+    return lr.flowName;
+}
 
 describe("Flowgger", function() {
   const appender = new TestAppender();
@@ -11,15 +17,16 @@ describe("Flowgger", function() {
         {
           handler: appender,
           layout: (lr,lvl) => { //can be a function or object
+            const fName = flowName(lr)
             if(lvl === "trace"){
-              return lr.flowName;
+              return fName;
             }else{
               //remove exec time
               const seq = [];
               lr.steps.forEach(result => {
                 seq.push(result[0]);
               })
-              return `${lr.status},${lr.flowName},[${seq}]`;
+              return `${lr.success},${fName},[${seq}]`;
             }
           }
         }
@@ -36,7 +43,7 @@ describe("Flowgger", function() {
     
     const expected = [
       [ 'trace', 'first flow' ],
-      [ 'info', '✅,first flow,[0,2,2,4]' ]
+      [ 'info', 'true,first flow,[0,2,2,4]' ]
     ]
     
     const flow = flowgger.init("first flow");
@@ -55,7 +62,7 @@ describe("Flowgger", function() {
     appender.streamData = [];
     const expected = [
       [ 'trace', 'first flow' ],
-      [ 'info', '✅,first flow,[0,2,2,2,4]' ]
+      [ 'info', 'true,first flow,[0,2,2,2,4]' ]
     ]
 
     const logInstance = flowgger.init("first flow");
@@ -74,7 +81,7 @@ describe("Flowgger", function() {
     appender.streamData = [];
     const expected = [
       [ 'trace', 'first flow' ],
-      [ 'info', '✅,first flow,[0,2]' ]
+      [ 'info', 'true,first flow,[0,2]' ]
     ]
 
     const logInstance = flowgger.init("first flow");
@@ -91,7 +98,7 @@ describe("Flowgger", function() {
     appender.streamData = [];
     const expected = [
       [ 'trace', 'first flow' ],
-      [ 'info', '✅,first flow,[0,2]' ]
+      [ 'info', 'true,first flow,[0,2]' ]
     ]
 
     const logInstance = flowgger.init("first flow");

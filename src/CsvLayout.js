@@ -12,14 +12,14 @@ export default class CsvLayout{
       return msg;
     }
   }
-  info(logRecord){
-    let msg = `${logRecord.status},${logRecord.id},${logRecord.reportTime},${logRecord.flowName},${stringify(logRecord.steps)},${Date.now()-logRecord.reportTime}`; 
-    if(logRecord.parentFlowId){
-      msg += `,${logRecord.parentFlowId},${logRecord.parentStepId}`;
+  info(lr){
+    let msg = `${lr.success},${lr.id},${lr.reportTime},${lr.flowName},${lr.version},${stringify(lr.steps)},${Date.now()-lr.reportTime}`; 
+    if(lr.parentFlowId){
+      msg += `,${lr.parentFlowId},${lr.parentStepId}`;
     }else{
       msg += ",,";
     }
-    msg = `,${logRecord.errMsg}`
+    msg = `,${lr.errMsg}`
     return msg;
   }
   debug(logRecord){
