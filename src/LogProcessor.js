@@ -93,7 +93,7 @@ export default class LogProcessor{
     this.logDebug = this.recordData;
     this.logWarn = this.recordWarn;
     this.logError = this.recordErr;
-    this.pausedKeys = new Set();
+    this.playingKeys = new Set();
   }
 
   /**
@@ -152,7 +152,7 @@ export default class LogProcessor{
    * @param {string} key play/pause logs
    */
   #recordLog(logRecord, msg, data, streamType, logLevel, key){
-    if(key && this.pausedKeys.has(key)) return;
+    if(key && !this.playingKeys.has(key)) return;
     const flow = this.#flows[logRecord.key];
     if(flow.paused) return;
     log(logRecord.dataLog(msg, data),flow.streams[streamType],logLevel);
@@ -265,12 +265,15 @@ export default class LogProcessor{
   }
 
   /**
-   * 
+   * If a key is present in playedKeys, delete it else take no action 
    * @param {{keys: string[], flows: string[], level: string[]}} pauseConfig 
    */
   pause(pauseConfig = {}){
-    if(Array.isArray(pauseConfig.keys)){
-      this.pausedKeys = new Set(pauseConfig.keys); 
+    if(Array.isArray(pauseConfig.keys) && this.playingKeys){
+      pauseConfig.keys.forEach(key => {
+        if(this.playingKeys.has(key)) this.playingKeys.delete(key);
+      })
+      
     }
     if(Array.isArray(pauseConfig.flows)){
       const flowNames = Object.keys(this.#flows);
@@ -296,14 +299,13 @@ export default class LogProcessor{
     
 
   /**
-   * 
+   * If a key are not present in playedKeys, add it.
    * @param {{keys: Set<string>, flows: string[], level: string[]}} playConfig 
    */
   play(playConfig = {}){
-    if(Array.isArray(playConfig.keys) && this.pausedKeys){
-      playConfig.keys.forEach(key => {
-        if(this.pausedKeys.has(key)) this.pausedKeys.delete(key);
-      })
+    if(Array.isArray(playConfig.keys)){
+      if(!this.playingKeys) this.playingKeys = new Set();
+      playConfig.keys.forEach(key => this.playingKeys.add(key));
     }
     if(Array.isArray(playConfig.flows)){
       const flowNames = Object.keys(this.#flows);

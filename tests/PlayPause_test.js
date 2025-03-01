@@ -47,11 +47,13 @@ describe("Flowgger", function() {
       [ 'trace', 'first flow(0.0.1)' ],
       [ 'trace', 'second flow(1)' ],
       [ 'trace', 'second flow(2)' ],
-      [ 'debug', 'extra info 1,2' ],
+      // [ 'debug', 'extra info 1,2' ], //paused
+      [ 'debug', 'extra info 2,2' ],
       [ 'debug', 'extra info 3,2' ],
       [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ],
+      [ 'debug', 'extra info 4,0' ],
       [ 'debug', 'extra info 5,0' ],
-      [ 'debug', 'extra info 6,0' ],
+      [ 'debug', 'extra info 7,0' ],
       [ 'info', 'true,second flow(1),[0,2,4]' ],
       [ 'error', 'invalid step: this is wrong step,-1' ],
       [ 'info', 'false,second flow(2),[]' ]
@@ -63,23 +65,24 @@ describe("Flowgger", function() {
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
-    flow.debug("extra info 1", null, "abc");
-    flowgger.pause({
-      keys: ["abc"]
+    flow.debug("extra info 1", null, "abc"); //by default paused
+    flowgger.play({
+      keys: ["abc", "mno"]
     })
-    flow.debug("extra info 2", null, "abc");
+    flow.debug("extra info 2", null, "abc"); //playing
     flow.info("until the next condition is true") //2
-    flow.debug("extra info 3", null, "mno");
+    flow.debug("extra info 3", null, "mno"); //playing
     flow.info("mark it complete") //4
     
     
     flow2.info("this is the also another flow") //0
-    flow2.debug("extra info 4", null, "abc");
-    flow2.debug("extra info 5", null, "mno");
-    flowgger.play({
+    flow2.debug("extra info 4", null, "abc"); //playing
+    flow2.debug("extra info 5", null, "mno"); //playing
+    flowgger.pause({
       keys: ["abc"]
     })
-    flow2.debug("extra info 6", null, "abc");
+    flow2.debug("extra info 6", null, "abc"); //paused
+    flow2.debug("extra info 7", null, "mno"); //playing
     flow2.info("until the next condition is true") //2
     flow2.info("mark it complete") //4
 
@@ -115,6 +118,9 @@ describe("Flowgger", function() {
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
+    flowgger.play({
+      keys: ["abc","mno"]
+    })
     flow.debug("extra info 1", null, "abc");
     flowgger.pause({
       flows: ["second flow(1)","first flow(0.0.1)"]
@@ -153,7 +159,7 @@ describe("Flowgger", function() {
       [ 'trace', 'first flow(0.0.1)' ],
       [ 'trace', 'second flow(1)' ],
       [ 'trace', 'second flow(2)' ],
-      [ 'debug', 'extra info 1,2' ],
+      // [ 'debug', 'extra info 1,2' ],
       [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ],
       [ 'error', 'extra info 5,0' ],
       [ 'debug', 'extra info 6,0' ],
@@ -168,13 +174,16 @@ describe("Flowgger", function() {
     
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
-    flow.debug("extra info 1", null, "abc");
+    flow.debug("extra info 1", null, "abc"); //paused
+    flowgger.play({
+      keys: ["abc", "mno"]
+    })
     flowgger.pause({
       types: ["data"]
     })
-    flow.debug("extra info 2", null, "abc");
+    flow.debug("extra info 2", null, "abc"); //paused
     flow.info("until the next condition is true") //2
-    flow.warn("extra info 3", null, "mno");
+    flow.warn("extra info 3", null, "mno"); //paused
     flow.info("mark it complete") //4
     
     
