@@ -5,6 +5,15 @@ import FlowggerError from "./FlowggerError.js";
  * Holds info of a flow in progress.
  */
 class FlowLog{
+  /**
+   * 
+   * @param {*} flowObj 
+   * @param {*} flowId 
+   * @param {string} key // index key to fetch flow directly: flowname(vesion)
+   * @param {string} flowName 
+   * @param {string} version 
+   * @param {*} parentFlow 
+   */
   constructor(flowObj, flowId, key, flowName, version, parentFlow){
     this.id= flowId,
     this.name = flowName;
@@ -56,11 +65,12 @@ class FlowLog{
     }
     return response;
   }
-  dataLog(data){
+  dataLog(msg, data){
     return {
       id: this.id,
       lastStepId: this.lastStep.id,
-      data: data,
+      msg,
+      data,
       reportTime: Date.now(),
     }
   }
@@ -94,12 +104,11 @@ export default class LogProcessor{
    * @returns {FlowLog}
    */
   register(flowName, version, parentFlow){
-    let key = flowName;
-    if(version) key += `(${version})`;
+    let key = `${flowName}(${version})`;
 
     const flow = this.#flows[key];
     // console.debug(this.#flows);
-    if(!flow) throw new FlowggerError(`Invalid Flow name: ${flowName}, or key value`);
+    if(!flow) throw new FlowggerError(`Invalid Flow name: ${flowName}, or version`);
     
     const flowId = logId();
     const logRecord = new FlowLog(flow, flowId, key, flowName, version, parentFlow);
@@ -123,14 +132,14 @@ export default class LogProcessor{
 
   }
 
-  recordErr(logRecord, msg, data, key){
-    this.recordData(logRecord,msg,data,"error","error",key);
+  recordErr(logRecord, msg, data="", key){
+    this.#recordLog(logRecord,msg,data,"error","error",key);
   }
   recordData(logRecord, msg, data, key){
-    this.recordData(logRecord,msg,data,"data","debug",key);
+    this.#recordLog(logRecord,msg,data,"data","debug",key);
   }
   recordWarn(logRecord, msg, data, key){
-    this.recordData(logRecord,msg,data,"data","warn",key);
+    this.#recordLog(logRecord,msg,data,"data","warn",key);
   }
 
   /**
@@ -142,7 +151,7 @@ export default class LogProcessor{
    * @param {string} logLevel log level 
    * @param {string} key play/pause logs
    */
-  recordData(logRecord, msg, data, streamType, logLevel, key){
+  #recordLog(logRecord, msg, data, streamType, logLevel, key){
     if(key && this.pausedKeys.has(key)) return;
     const flow = this.#flows[logRecord.key];
     if(flow.paused) return;

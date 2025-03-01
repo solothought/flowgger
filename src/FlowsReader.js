@@ -39,18 +39,10 @@ export default class FlowsReader{
       checkForValidBranches(flow.steps, flow.name);
       normalizeLinks(flow);
       addStreamsProperty(flow);
-      //discriminationHeader should be considered only if given with a flow
-      let uName = flow.name;
-      if(dHeader){
-        if(flow.headers[dHeader]!== undefined){
-          uName =`${flow.name}(${flow.headers[dHeader]})`;
-        }else{
-          //flow key will be used if given with a flow
-          console.warn(`${dHeader} is not given for "${flow.name}"`);
-        }
-      }
-      flow.uName = uName;
-      newFlows[uName] = flow;
+      //version is mandatory
+      if(!flow.headers[dHeader]) flow.headers[dHeader] = "0.0.1";
+      flow.uName = `${flow.name}(${flow.headers[dHeader]})`;;
+      newFlows[flow.uName] = flow;
       this.#updateExecutionTime(flow);
     });
     this.flows = Object.assign(this.flows,newFlows);

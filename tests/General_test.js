@@ -75,7 +75,7 @@ describe("Flowgger", function() {
     dataAppender.streamData = [];
     // errAppender.streamData = [];
     const flow1 = flowgger.init("first flow");
-    const flow2 = flowgger.init("second flow(1)");
+    const flow2 = flowgger.init("second flow","1");
     flow1.info("this is the sample flow") //0
     flow1.info("until the next condition is true") //2
     flow2.info("this is the sample flow") //0
@@ -87,13 +87,13 @@ describe("Flowgger", function() {
 
 
 
-    console.log(flowsAppender.streamData);
-    console.log(headAppender.streamData);
-    console.log(dataAppender.streamData);
+    // console.log(flowsAppender.streamData);
+    // console.log(headAppender.streamData);
+    // console.log(dataAppender.streamData);
     // console.log(errAppender.streamData);
     
     // expect(testAppender.streamData[0].endsWith(`${flow.flowId},${formatDate(flow.flowId)},first flow\n`)).toBeTrue();
-    // expect(testAppender.streamData[1]).toEqual(`${flow.flowId},${formatDate(flow.flowId)},first flow,0,2,2,4,true\n`);
+    // expect(testAppender.streamData[1]).toEqual(`${flow.flowId},${formatDate(flow.flowId)},first flow(0.0.1),0,2,2,4,true\n`);
   });
 
   

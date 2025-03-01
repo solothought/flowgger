@@ -2,13 +2,6 @@ import Flowgger from "../src/Flowgger.js";
 import path from "path";
 import TestAppender from "./TestAppender.js";
 
-function flowName(lr){
-  if(lr.version || lr.version === 0)
-    return `${lr.flowName}(${lr.version})`;
-  else
-    return lr.flowName;
-}
-
 describe("Flowgger", function() {
   const appender = new TestAppender();
 
@@ -17,12 +10,12 @@ describe("Flowgger", function() {
         {
           handler: appender,
           layout: (lr,lvl) => { //can be a function or object
-            const fName = flowName(lr)
+            const fName = `${lr.flowName}(${lr.version})`;
 
             if(lvl === "trace"){
               return fName;
             }else if(lvl === "error"){
-              return `${lr.data},${lr.lastStepId}`;
+              return `${lr.msg},${lr.lastStepId}`;
             }else{
               //remove exec time
               const seq = [];
@@ -90,8 +83,8 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'first flow' ],
-      [ 'info', 'true,first flow,[0,2,2,4]' ]
+      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ]
     ]    
     
     const flow = flowgger.init("first flow");
@@ -126,7 +119,7 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'info', 'true,first flow,[0,2,2,4]' ],
+      [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ],
       [ 'info', 'true,second flow(1),[0,2,4]' ],
       [ 'error', 'invalid step: this is wrong step,-1' ],
       [ 'info', 'false,second flow(2),[]' ]
@@ -164,7 +157,7 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'first flow' ],
+      [ 'trace', 'first flow(0.0.1)' ],
       [ 'trace', 'second flow(1)' ],
       [ 'trace', 'second flow(2)' ]    
     ]    

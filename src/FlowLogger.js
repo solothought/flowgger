@@ -8,10 +8,10 @@ export default class FlowLogger{
    * @param {string} flowName 
    * @param {LogProcessor} logProcessor 
    */
-  constructor(flowName, flowKey = "", logProcessor, parentFlow){
+  constructor(flowName, version, logProcessor, parentFlow){
     this.flowName = flowName;
     this.lp = logProcessor;
-    this.flow = logProcessor.register(flowName, flowKey);
+    this.flow = logProcessor.register(flowName, version);
     this.flow.parentFlow = parentFlow;
   }
   /**
@@ -29,7 +29,7 @@ export default class FlowLogger{
    * @param {any} data data to log
    * @param {string} key to group/enable/disable logs at run time
    */
-  error(msg, data, key){
+  error(msg, data="", key){
     if(typeof msg !== "string") 
       throw Error(`Provide brief detail about Error detail through first parameter.`);
     this.lp.logError(this.flow, msg, data, key);
@@ -40,7 +40,7 @@ export default class FlowLogger{
    * @param {any} data data to log
    * @param {string} key to group/enable/disable logs at run time
    */
-  debug(msg, data, key){
+  debug(msg, data="", key){
     if(typeof msg !== "string") 
       throw Error(`Provide brief detail about debug data detail through first parameter.`);
     this.lp.logDebug(this.flow, msg, data, key);
@@ -52,7 +52,7 @@ export default class FlowLogger{
    * @param {any} data data to log
    * @param {string} key to group/enable/disable logs at run time
    */
-  warn(msg, data, key){
+  warn(msg, data="", key){
     if(typeof msg !== "string") 
       throw Error(`Provide brief detail about warning data through first parameter.`);
     this.lp.logWarn(this.flow, msg, data, key);

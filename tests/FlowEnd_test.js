@@ -2,13 +2,6 @@ import Flowgger from "../src/Flowgger.js";
 import path from "path";
 import TestAppender from "./TestAppender.js";
 
-function flowName(lr){
-  if(lr.version || lr.version === 0)
-    return `${lr.flowName}(${lr.version})`;
-  else
-    return lr.flowName;
-}
-
 describe("Flowgger", function() {
   const appender = new TestAppender();
 
@@ -17,7 +10,7 @@ describe("Flowgger", function() {
         {
           handler: appender,
           layout: (lr,lvl) => { //can be a function or object
-            const fName = flowName(lr)
+            const fName = `${lr.flowName}(${lr.version})`;
             if(lvl === "trace"){
               return fName;
             }else{
@@ -42,8 +35,8 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'first flow' ],
-      [ 'info', 'true,first flow,[0,2,2,4]' ]
+      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ]
     ]
     
     const flow = flowgger.init("first flow");
@@ -61,8 +54,8 @@ describe("Flowgger", function() {
   it("should not error when 'end' is called but flow is already ended", function() {
     appender.streamData = [];
     const expected = [
-      [ 'trace', 'first flow' ],
-      [ 'info', 'true,first flow,[0,2,2,2,4]' ]
+      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'true,first flow(0.0.1),[0,2,2,2,4]' ]
     ]
 
     const logInstance = flowgger.init("first flow");
@@ -80,8 +73,8 @@ describe("Flowgger", function() {
   it("should end flow on 'end' when last step points to end and non-end steps", function() {
     appender.streamData = [];
     const expected = [
-      [ 'trace', 'first flow' ],
-      [ 'info', 'true,first flow,[0,2]' ]
+      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'true,first flow(0.0.1),[0,2]' ]
     ]
 
     const logInstance = flowgger.init("first flow");
@@ -97,8 +90,8 @@ describe("Flowgger", function() {
     //This is an edge case. User is expected to end flow with ending step or end()
     appender.streamData = [];
     const expected = [
-      [ 'trace', 'first flow' ],
-      [ 'info', 'true,first flow,[0,2]' ]
+      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'true,first flow(0.0.1),[0,2]' ]
     ]
 
     const logInstance = flowgger.init("first flow");
