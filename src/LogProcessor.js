@@ -122,39 +122,32 @@ export default class LogProcessor{
     }
 
   }
+
+  recordErr(logRecord, msg, data, key){
+    this.recordData(logRecord,msg,data,"error","error",key);
+  }
+  recordData(logRecord, msg, data, key){
+    this.recordData(logRecord,msg,data,"data","debug",key);
+  }
+  recordWarn(logRecord, msg, data, key){
+    this.recordData(logRecord,msg,data,"data","warn",key);
+  }
+
   /**
    * Log additional data to error stream which is not the part of the flow
    * @param {FlowLog} logRecord
-   * @param {string} errMsg Error msg to log 
-   */
-  recordErr(logRecord, errMsg){
-    const flow = this.#flows[logRecord.key];
-    if(flow.paused) return;
-    log(logRecord.dataLog(errMsg),flow.streams["error"], "error");
-  }
-  /**
-   * Log additional data to data stream which is not the part of the flow
-   * @param {FlowLog} logRecord LogFow record
+   * @param {string} msg Short msg about data 
    * @param {any} data data to log 
-   * @param {string} key to enable/disable logging at runtime 
+   * @param {string} streamType where to log 
+   * @param {string} logLevel log level 
+   * @param {string} key play/pause logs
    */
-  recordData(logRecord, data, key){
+  recordData(logRecord, msg, data, streamType, logLevel, key){
     if(key && this.pausedKeys.has(key)) return;
     const flow = this.#flows[logRecord.key];
     if(flow.paused) return;
-    log(logRecord.dataLog(data),flow.streams["data"],"debug");
+    log(logRecord.dataLog(msg, data),flow.streams[streamType],logLevel);
   }
-  /**
-   * Log additional data to data stream which is not the part of the flow
-   * @param {FlowLog} logRecord LogFow record
-   * @param {any} data data to log 
-   */
-  recordWarn(logRecord, data){
-    const flow = this.#flows[logRecord.key];
-    if(flow.paused) return;
-    log(logRecord.dataLog(data),flow.streams["data"],"warn");
-  }
-
   /**
    * A dummy method for dynamic pause
    */
