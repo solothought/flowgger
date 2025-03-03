@@ -19,7 +19,7 @@ export default class CsvLayout{
       }else{
         msg += ",,";
       }
-      msg = `,${lr.errMsg}`
+      msg += `,${lr.errMsg}`
     }
     return msg;
   }
