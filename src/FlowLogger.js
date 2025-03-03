@@ -45,6 +45,19 @@ export default class FlowLogger{
       throw Error(`Provide brief detail about debug data detail through first parameter.`);
     this.lp.logDebug(this.flow, msg, data, key);
   }
+  /**
+   * Use to log extra information
+   * @param {any} msg summary about data
+   * @param {string} key to group/enable/disable logs at run time
+   */
+  trace(msg, key){
+    if(typeof msg !== "string") 
+      throw Error(`Provide brief detail about debug data detail through first parameter.`);
+
+    const err = new Error();
+    const stackTrace = err.stack.split('\n').slice(2).join('\n'); // Skip the first two lines
+    this.lp.logDebug(this.flow, msg, stackTrace, key);
+  }
 
     /**
    * Use to log extra information with warning symbol '⚠️'

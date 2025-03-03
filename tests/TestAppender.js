@@ -7,7 +7,7 @@ export default class TestAppender{
   append(logRecord, level){
     if(typeof this.layout === "function"){
       this.streamData.push([level, this.layout(logRecord, level)]);
-    }else{
+    }else{ //layout is an instance
       this.streamData.push([level, this.layout[level](logRecord)]);
     }
   }

@@ -13,7 +13,7 @@ describe("Flowgger", function() {
             // console.debug(lr);
             const fName = `${lr.flowName}(${lr.version})`;
 
-            if(lvl === "trace"){
+            if(lvl === "info" && !lr.steps){
               return fName;
             }else if(lvl === "error"){
               return `${lr.msg},${lr.lastStepId}`;
@@ -44,9 +44,9 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'first flow(0.0.1)' ],
-      [ 'trace', 'second flow(1)' ],
-      [ 'trace', 'second flow(2)' ],
+      [ 'info', 'first flow(0.0.1)' ],
+      [ 'info', 'second flow(1)' ],
+      [ 'info', 'second flow(2)' ],
       // [ 'debug', 'extra info 1,2' ], //paused
       [ 'debug', 'extra info 2,2' ],
       [ 'debug', 'extra info 3,2' ],
@@ -101,9 +101,9 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'first flow(0.0.1)' ],
-      [ 'trace', 'second flow(1)' ],
-      [ 'trace', 'second flow(2)' ],
+      [ 'info', 'first flow(0.0.1)' ],
+      [ 'info', 'second flow(1)' ],
+      [ 'info', 'second flow(2)' ],
       [ 'debug', 'extra info 1,2' ],
       [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ],
       [ 'debug', 'extra info 6,0' ],
@@ -156,9 +156,9 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'first flow(0.0.1)' ],
-      [ 'trace', 'second flow(1)' ],
-      [ 'trace', 'second flow(2)' ],
+      [ 'info', 'first flow(0.0.1)' ],
+      [ 'info', 'second flow(1)' ],
+      [ 'info', 'second flow(2)' ],
       // [ 'debug', 'extra info 1,2' ],
       [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ],
       [ 'error', 'extra info 5,0' ],

@@ -115,7 +115,7 @@ export default class LogProcessor{
     this.#logFlows[flowId] = logRecord;
 
     //acknowledge
-    log(logRecord.headLog(),flow.streams["head"],"trace");
+    log(logRecord.headLog(),flow.streams["head"],"info");
     
     return logRecord;
   }

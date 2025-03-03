@@ -12,7 +12,7 @@ describe("Flowgger", function() {
           layout: (lr,lvl) => { //can be a function or object
             const fName = `${lr.flowName}(${lr.version})`;
 
-            if(lvl === "trace"){
+            if(lvl === "info" && !lr.steps){
               return fName;
             }else if(lvl === "error"){
               return `${lr.msg},${lr.lastStepId}`;
@@ -44,8 +44,8 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'second flow(1)' ],
-      [ 'trace', 'second flow(2)' ],
+      [ 'info', 'second flow(1)' ],
+      [ 'info', 'second flow(2)' ],
       [ 'info', 'true,second flow(1),[0,2,4]' ],
       [ 'error', 'invalid step: this is wrong step,-1' ],
       [ 'info', 'false,second flow(2),[]' ]
@@ -83,7 +83,7 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'first flow(0.0.1)' ],
       [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ]
     ]    
     
@@ -157,9 +157,9 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'first flow(0.0.1)' ],
-      [ 'trace', 'second flow(1)' ],
-      [ 'trace', 'second flow(2)' ]    
+      [ 'info', 'first flow(0.0.1)' ],
+      [ 'info', 'second flow(1)' ],
+      [ 'info', 'second flow(2)' ]    
     ]    
     
     const flow = flowgger.init("first flow");
@@ -196,8 +196,8 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'second flow(1)' ],
-      [ 'trace', 'second flow(2)' ]    
+      [ 'info', 'second flow(1)' ],
+      [ 'info', 'second flow(2)' ]    
     ]    
     
     const flow = flowgger.init("first flow");

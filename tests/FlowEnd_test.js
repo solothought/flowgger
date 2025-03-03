@@ -11,7 +11,7 @@ describe("Flowgger", function() {
           handler: appender,
           layout: (lr,lvl) => { //can be a function or object
             const fName = `${lr.flowName}(${lr.version})`;
-            if(lvl === "trace"){
+            if(lvl === "info" && !lr.steps){
               return fName;
             }else{
               //remove exec time
@@ -35,7 +35,7 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'first flow(0.0.1)' ],
       [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ]
     ]
     
@@ -54,7 +54,7 @@ describe("Flowgger", function() {
   it("should not error when 'end' is called but flow is already ended", function() {
     appender.streamData = [];
     const expected = [
-      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'first flow(0.0.1)' ],
       [ 'info', 'true,first flow(0.0.1),[0,2,2,2,4]' ]
     ]
 
@@ -73,7 +73,7 @@ describe("Flowgger", function() {
   it("should end flow on 'end' when last step points to end and non-end steps", function() {
     appender.streamData = [];
     const expected = [
-      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'first flow(0.0.1)' ],
       [ 'info', 'true,first flow(0.0.1),[0,2]' ]
     ]
 
@@ -90,7 +90,7 @@ describe("Flowgger", function() {
     //This is an edge case. User is expected to end flow with ending step or end()
     appender.streamData = [];
     const expected = [
-      [ 'trace', 'first flow(0.0.1)' ],
+      [ 'info', 'first flow(0.0.1)' ],
       [ 'info', 'true,first flow(0.0.1),[0,2]' ]
     ]
 

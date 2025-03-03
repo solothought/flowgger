@@ -33,7 +33,7 @@ describe("Flowgger", function() {
         },
         onlyFor: {
           types: ["flows"],
-          flows: ["second flow(2)", "first flow"]
+          flows: ["second flow(2)", "first flow(0.0.1)"]
         }
       },
       {
@@ -41,7 +41,7 @@ describe("Flowgger", function() {
         layout: new CsvLayout(),
         onlyFor: {
           types: ["head"],
-          flows: ["second flow(2)", "first flow"]
+          flows: ["second flow(2)", "first flow(0.0.1)"]
         }
       },
       {
@@ -49,7 +49,7 @@ describe("Flowgger", function() {
         // layout: logRecord => logRecord, //default
         onlyFor: {
           types: ["data", "error"],
-          flows: ["second flow(2)", "first flow"]
+          flows: ["second flow(2)", "first flow(0.0.1)"]
         }
       },
       {
