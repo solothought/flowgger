@@ -5,7 +5,6 @@ export default class Log4jsAdapter {
   }
 
   append(logRecord, level) {
-    console.debug(logRecord, level);
     if(typeof this.layout === "function"){
       this.logger[level](this.layout(logRecord, level));
     }else{

@@ -77,4 +77,7 @@ export class ConsoleAppender implements Appender {
 export class FileAppender implements Appender {
   append(logRecord: LogRecord, level: string): void;
 }
+export class Log4jsAdapter implements Appender{
+  append(logRecord: LogRecord, level: string): void;
+}
 

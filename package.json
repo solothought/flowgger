@@ -22,6 +22,12 @@
         "types": "./src/Flowgger.d.ts",
         "default": "./src/appenders/ConsoleAppender.js"
       }
+    },
+    "./Log4jsAdapter": {
+      "import": {
+        "types": "./src/Flowgger.d.ts",
+        "default": "./src/Log4jsAdapter.js"
+      }
     }
   },
   "files": [
