@@ -69,7 +69,7 @@ export default class FlowLogger{
 
     const err = new Error();
     const stackTrace = err.stack.split('\n').slice(2).join('\n'); // Skip the first two lines
-    this.lp.logDebug(this.flow, msg, stackTrace, key);
+    this.lp.logTrace(this.flow, msg, stackTrace, key);
   }
 
     /**

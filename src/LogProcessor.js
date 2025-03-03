@@ -93,6 +93,7 @@ export default class LogProcessor{
     this.logDebug = this.recordData;
     this.logWarn = this.recordWarn;
     this.logError = this.recordErr;
+    this.logTrace = this.recordTrace;
     this.playingKeys = new Set();
   }
 
@@ -140,6 +141,9 @@ export default class LogProcessor{
   }
   recordWarn(logRecord, msg, data, key){
     this.#recordLog(logRecord,msg,data,"data","warn",key);
+  }
+  recordTrace(logRecord, msg, data, key){
+    this.#recordLog(logRecord,msg,data,"data","trace",key);
   }
 
   /**
@@ -288,6 +292,8 @@ export default class LogProcessor{
       if(pauseConfig.types.includes("data")){
         this.logDebug = this.noLog;
         this.logWarn = this.noLog;
+      }else if(pauseConfig.types.includes("trace")){
+        this.logTrace = this.noLog;
       }else if(pauseConfig.types.includes("error")){
         this.logError = this.noLog;
       }
@@ -318,6 +324,8 @@ export default class LogProcessor{
       if(playConfig.types.includes("data")){
         this.logDebug = this.recordData;
         this.logWarn = this.recordWarn;
+      }else if(playConfig.types.includes("trace")){
+        this.logTrace = this.recordTrace;
       }else if(playConfig.types.includes("error")){
         this.logError = this.recordErr;
       }
