@@ -104,8 +104,12 @@ The graph below compares the log size produced by Flowgger versus a traditional 
 
 1. In first comparison, I've used 20 logs statements where the size of each log statement is 20 chars on average
 2. In second comparison, I've used 20 logs statements where each log statement is 50 chars long on average.
-1. In 3rd comparison, I've used 50 logs statements with 20 chars long log message on average
+1. In 3rd comparison, I've used 50 logs statements with 50 chars long log message on average
 
 ![flowgger_vs_log4js logs size](./assets/flowgger_vs_log4js.png)
 
-Consideration: In this comparison, it is considered that there is no extra debug, error, or other logs. All the log statements define the flow of application.  
+<small>Smaller is good.</small>
+
+Above graph highlights the difference for 1 API call. Suppose you have 10 APIs, Flowgger will generate a log file of 2.75 mb for 1000 requests to each API, where the other frameworks will generate a log file of 22.3 mb. Here, we've considered 20 log statements per API with 50 chars in each statement on average.
+
+Consideration: In this comparison, it is considered that there is no extra debug, error, or other logs. All the log statements define the flow of application. 
