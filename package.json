@@ -1,21 +1,57 @@
 {
   "name": "@solothought/flowgger",
-  "version": "1.0.0",
-  "description": "",
-  "main": "./src/SlimoLogger.js",
+  "version": "1.0.0-beta.0",
+  "description": "Logging framework for predefined flows",
+  "main": "./dist/flowgger.cjs",
   "type": "module",
-  "scripts": {
-    "test": "jasmine tests/*_test.js"
+  "module": "./src/Flowgger.js",
+  "types": "./src/Flowgger.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./src/Flowgger.d.ts",
+        "default": "./src/Flowgger.js"
+      },
+      "require": {
+        "types": "./dist/flowgger.d.cts",
+        "default": "./dist/flowgger.cjs"
+      }
+    },
+    "./ConsoleAppender": {
+      "import": {
+        "types": "./src/Flowgger.d.ts",
+        "default": "./src/appenders/ConsoleAppender.js"
+      }
+    }
   },
+  "files": [
+    "dist",
+    "src",
+    "CHANGELOG.md"
+  ],
   "keywords": [
+    "logging",
+    "log",
     "flow",
     "logger"
   ],
-  "author": "",
-  "license": "ISC",
+  "author": "Amit Gupta (https://solothought.com)",
+  "license": "MIT",
+  "scripts": {
+    "test": "c8 --reporter=lcov --reporter=text jasmine tests/*_test.js"
+  },
+  "devDependencies": {
+    "@solothought/flowgger-appenders": "./../flowgger-appenders/",
+    "c8": "^10.1.3",
+    "log4js": "^6.9.1"
+  },
   "dependencies": {
-    "@solothought/text2obj": "^1.0.3",
-    "log4js": "^6.9.1",
-    "thds": "file:../tsds"
-  }
+    "@solothought/text2obj": "^1.0.3"
+  },
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/solothought"
+    }
+  ]
 }
