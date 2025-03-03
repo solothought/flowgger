@@ -32,7 +32,20 @@ export default class FlowLogger{
   error(msg, data="", key){
     if(typeof msg !== "string") 
       throw Error(`Provide brief detail about Error detail through first parameter.`);
-    this.lp.logError(this.flow, msg, data, key);
+  
+    let enhancedData;
+    if (data instanceof Error) {
+      // Extract error details
+      enhancedData = {
+        errorMessage: data.message || "No error message",
+        stackTrace: data.stack || "No stack trace available",
+      };
+    } else {
+      // Treat data as a generic value
+      enhancedData = data;
+    }
+
+    this.lp.logError(this.flow, msg, enhancedData, key);
   }
   /**
    * Use to log extra information
