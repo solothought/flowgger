@@ -1,6 +1,6 @@
 import BaseAppender from "./BaseAppender.js";
 import { isValidDir } from "../util.js";
-import FlowggerError from "./FlowggerError.js";
+import FlowggerError from "../FlowggerError.js";
 import fs from "fs";
 import path from "path";
 

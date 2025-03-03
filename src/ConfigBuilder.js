@@ -29,11 +29,11 @@ export const deaultConfig = {
   },
   flow: {
     // source: "input/dir",
-    maxIdleTime: 200,       //time difference between 2 consecutive steps
-    maxFlowsCapacity: 1000  //active flows. TODO: manage number of open active flows in memory
+    // maxIdleTime: 200,       //time difference between 2 consecutive steps
+    // maxFlowsCapacity: 1000  //active flows. TODO: manage number of open active flows in memory
   },
   layout: {
-    stepDuration: "EXCEED" // ALWAYS, NEVER
+    // stepDuration: "EXCEED" // ALWAYS, NEVER
   }
 };
 
