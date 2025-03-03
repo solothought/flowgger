@@ -18,8 +18,8 @@ export function isValidDir(dirPath){
 
 export function stringify(d){
   if (typeof d === "object") {
-    stream.write(JSON.stringify(d));
+    return JSON.stringify(d);
   } else {
-    stream.write(String(d));
+    return String(d);
   }
 }
