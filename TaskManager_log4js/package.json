@@ -1,0 +1,17 @@
+{
+  "name": "taskmanager",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "@solothought/flowgger": "file:..",
+    "express": "^4.21.2",
+    "log4js": "^6.9.1"
+  }
+}
