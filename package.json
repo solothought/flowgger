@@ -39,7 +39,9 @@
   "files": [
     "dist",
     "src",
-    "CHANGELOG.md"
+    "README.md",
+    "CHANGELOG.md",
+    "assets/flowgger_vs_log4js.png"
   ],
   "keywords": [
     "logging",
@@ -47,8 +49,21 @@
     "flow",
     "logger"
   ],
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/solothought/flowgger"
+	},
+  "publishConfig": {
+		"access": "public"
+	},
   "author": "Amit Gupta (https://solothought.com)",
   "license": "MIT",
+  "funding": [
+    {
+      "type": "github",
+      "url": "https://github.com/sponsors/solothought"
+    }
+  ],
   "scripts": {
     "test": "c8 --reporter=lcov --reporter=text jasmine tests/*_test.js"
   },
@@ -58,11 +73,5 @@
   },
   "dependencies": {
     "@solothought/text2obj": "^1.0.3"
-  },
-  "funding": [
-    {
-      "type": "github",
-      "url": "https://github.com/sponsors/solothought"
-    }
-  ]
+  }
 }
