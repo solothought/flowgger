@@ -2,8 +2,6 @@ interface LogRecord {
   //head log, flow log, data log
   id: string;
   reportTime: number;
-
-  //head and flow log
   flowName?: string;
   version?: string;
 

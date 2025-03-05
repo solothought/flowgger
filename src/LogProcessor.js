@@ -68,6 +68,8 @@ class FlowLog{
   dataLog(msg, data){
     return {
       id: this.id,
+      flowName: this.name,
+      version: this.version,
       lastStepId: this.lastStep.id,
       msg,
       data,
