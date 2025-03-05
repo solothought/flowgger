@@ -13,36 +13,36 @@ export default class CsvLayout{
         return `${msg},${lr.parentFlowId},${lr.parentStepId}`;
       }
     }else{
-      msg = `FLOW,${lr.id},${lr.reportTime},${lr.flowName},${lr.version},${stringify(lr.steps)},${Date.now()-lr.reportTime},${lr.success}`; 
+      msg = `FLOW,${lr.id},${lr.reportTime},${sanitizeForCSV(lr.flowName)},${lr.version},${stepsStr(lr.steps)},${Date.now()-lr.reportTime},${lr.success?1:0}`; 
       if(lr.parentFlowId){
         msg += `,${lr.parentFlowId},${lr.parentStepId}`;
       }else{
         msg += ",,";
       }
-      msg += `,${lr.errMsg}`
+      msg += `,${sanitizeForCSV(lr.errMsg)}`
     }
     return msg;
   }
   debug(lr){
-    let msg = `DEBUG,${lr.id},${lr.reportTime},${lr.lastStepId},${lr.msg},${stringify(lr.data)}`; 
-    return msg;
+    return this.#inform("DEBUG",lr);
   }
   trace(lr){
     const data = this.#transformStackTraceForCSV(lr.data);
-    let msg = `TRACE,${lr.id},${lr.reportTime},${lr.lastStepId},${lr.msg},${data}`; 
+    let msg = `TRACE,${lr.id},${lr.reportTime},${lr.lastStepId},${sanitizeForCSV(lr.msg)},${sanitizeForCSV(data)}`; 
     return msg;
   }
   warn(lr){
-    let msg = `WARN,${lr.id},${lr.reportTime},${lr.lastStepId},${lr.msg},${stringify(lr.data)}`; 
-    return msg;
+    return this.#inform("WARN",lr);
   }
   error(lr){
-    let msg = `ERROR,${lr.id},${lr.reportTime},${lr.lastStepId},${lr.msg},${stringify(lr.data)}`; 
-    return msg;
+    return this.#inform("ERROR",lr);
   }
   fatal(lr){
-    let msg = `FATAL,${lr.id},${lr.reportTime},${lr.lastStepId},${lr.msg},${stringify(lr.data)}`; 
-    return msg;
+    return this.#inform("FATAL",lr);
+  }
+
+  #inform(lvl,lr){
+    return `${lvl},${lr.id},${lr.reportTime},${lr.lastStepId},${sanitizeForCSV(lr.msg)},${sanitizeForCSV(stringify(lr.data))}`; 
   }
   
   #transformStackTraceForCSV(stackTrace) {
@@ -58,4 +58,35 @@ export default class CsvLayout{
     // Escape double quotes and enclose in double quotes for CSV compatibility
     return `"${flattenedTrace.replace(/"/g, '""')}"`;
   }
+}
+
+/**
+ * @param {any} value 
+ * @returns {string}
+ */
+function sanitizeForCSV(value) {
+  if (!value) return "";
+  if (typeof value !== 'string') {
+      value = String(value);
+  }
+  
+  // Escape double quotes by doubling them
+  value = value.replace(/"/g, '""');
+  
+  // If the value contains a comma, newline, or double-quote, enclose it in double quotes
+  if (/[,"\n\r]/.test(value)) {
+      value = `"${value}"`;
+  }
+
+  return value;
+}
+
+/**
+ * 
+ * @param {[[number,number]]} steps 
+ * @returns {string} E.g. 1:1|2:0|3:1
+ */
+function stepsStr(steps){
+  return steps.join("|").replaceAll(",",":")
+
 }
