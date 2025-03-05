@@ -1,6 +1,6 @@
 {
   "name": "@solothought/flowgger",
-  "version": "1.0.0-beta.0",
+  "version": "1.0.0-beta.1",
   "description": "Logging framework for predefined flows",
   "main": "./dist/flowgger.cjs",
   "type": "module",
@@ -53,10 +53,15 @@
 		"type": "git",
 		"url": "https://github.com/solothought/flowgger"
 	},
+  "bugs": {
+    "url": "https://github.com/solothought/flowgger/issues",
+    "email": "githubissues@proton.me"
+  },
   "publishConfig": {
 		"access": "public"
 	},
   "author": "Amit Gupta (https://solothought.com)",
+  "homepage": "https://github.com/solothought/flowgger",
   "license": "MIT",
   "funding": [
     {
