@@ -1,4 +1,5 @@
 import FlowggerError from "./FlowggerError.js";
+import PatternLayout from "./PatternLayout.js";
 
 // const fileAppender = {
 //   handler: new FileAppender({
@@ -32,9 +33,7 @@ export const deaultConfig = {
     // maxIdleTime: 200,       //time difference between 2 consecutive steps
     // maxFlowsCapacity: 1000  //active flows. TODO: manage number of open active flows in memory
   },
-  layout: {
-    // stepDuration: "EXCEED" // ALWAYS, NEVER
-  }
+  layout: ""
 };
 
 export function validateConfig(config) {
@@ -57,9 +56,14 @@ export function validateConfig(config) {
       throw new FlowggerError("Invalid handler. Appender must have 'append' method");
     }
     if(appenderConfig.layout){
-      appenderConfig.handler.layout = appenderConfig.layout
+      if(typeof appenderConfig.layout === "string" || 
+        (appenderConfig.layout.head || appenderConfig.flow || appenderConfig.data)){
+          appenderConfig.handler.layout = new PatternLayout(appenderConfig.layout);
+      }else{
+        appenderConfig.handler.layout = appenderConfig.layout;
+      }
     }else{
-      appenderConfig.handler.layout = a => a;
+      appenderConfig.handler.layout = new PatternLayout();
     }
   })
 

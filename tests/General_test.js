@@ -3,7 +3,7 @@ import path from "path";
 import TestAppender from "./TestAppender.js";
 import log4js from 'log4js';
 import Log4jsAdapter from '../src/Log4jsAdapter.js';
-import CsvLayout from '../src/CsvLayout.js';
+import PatternLayout from "../src/PatternLayout.js";
 
 
 describe("Flowgger", function() {
@@ -38,7 +38,7 @@ describe("Flowgger", function() {
       },
       {
         handler: headAppender,
-        layout: new CsvLayout(),
+        layout: new PatternLayout(),
         onlyFor: {
           types: ["head"],
           flows: ["second flow(2)", "first flow(0.0.1)"]

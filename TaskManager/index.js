@@ -2,7 +2,7 @@
 import express from "express";
 import Flowgger from "@solothought/flowgger";
 // import ConsoleAppender from "@solothought/flowgger/ConsoleAppender";
-import CSVLayout from "@solothought/flowgger/CSVLayout";
+import PatternLayout from "@solothought/flowgger/PatternLayout";
 import taskController from "./taskController.js";
 import path from "path";
 import log4js from 'log4js';
@@ -41,7 +41,7 @@ const config = {
   appenders: [
     {
       handler: log4jsFileAppender,
-      layout: new CSVLayout(),
+      layout: new PatternLayout(),
       onlyFor: {
         types: ["head", "flows", "data", "error"],
       }

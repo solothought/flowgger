@@ -23,10 +23,10 @@
         "default": "./src/appenders/ConsoleAppender.js"
       }
     },
-    "./CSVLayout": {
+    "./PatternLayout": {
       "import": {
-        "types": "./src/Flowgger.d.ts",
-        "default": "./src/CsvLayout.js"
+        "types": "./src/PatternLayout.d.ts",
+        "default": "./src/PatternLayout.js"
       }
     },
     "./Log4jsAdapter": {

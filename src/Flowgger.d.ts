@@ -66,9 +66,6 @@ export interface FlowInstance {
   end(): void;
 }
 
-export class CsvLayout {
-  format(logRecord: LogRecord): string;
-}
 export class ConsoleAppender implements Appender {
   append(logRecord: LogRecord, level: string): void;
 }
