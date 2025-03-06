@@ -52,8 +52,11 @@ export default class PatternLayout{
 
   head(lr){
     let logMsg = this.#pattern.head;
-    console.log(logMsg)
     logMsg = this.#fillCommonProperties(lr, logMsg, "HEAD");
+
+    logMsg = logMsg.replace("%PARENT_ID%", lr.parentFlowId || "");
+    logMsg = logMsg.replace("%PARENT_STEP_ID%", lr.parentStepId || "");
+    
     return logMsg;
   }
   flow(lr){
