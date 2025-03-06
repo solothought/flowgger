@@ -128,4 +128,20 @@ describe("Flowgger", function() {
     // console.log(appender.streamData);
     expect(appender.streamData).toEqual(expected);
   });
+  
+  it("should error when flow is pre ended", function() {
+    appender.streamData = [];
+    const expected = [
+      [ 'info', '3rd flow(1)' ],
+      [ 'error', 'Flow is ended after step: first step,0' ],
+      [ 'info', 'false,3rd flow(1),[0]' ]    
+    ]
+
+    const f = flowgger.init("3rd flow",1);
+    f.info("first step")
+    f.end();
+
+    // console.log(appender.streamData);
+    expect(appender.streamData).toEqual(expected);
+  });
 });

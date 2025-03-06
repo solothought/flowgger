@@ -82,7 +82,7 @@ describe("Flowgger", function() {
     flow1.debug("extra info doesnt impact  flow");
     flow1.info("until the next condition is true") //2
     flow1.error("unexpected scenario should also be reported");
-    flow2.error("unexpected scenario in second flow");
+    flow2.error("unexpected scenario in second flow", new Error("Unexpectd route detected"));
     flow1.info("mark it complete") //4
 
 
