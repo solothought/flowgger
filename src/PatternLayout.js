@@ -4,7 +4,7 @@ export default class PatternLayout{
   #pattern
   constructor(pattern){
     this.#pattern = {
-      head: `%TYPE% %TIME% %ID% %NAME% %VERSION%`,
+      head: `%TYPE% %TIME% %ID% %NAME% %VERSION%  %PARENT_ID% %PARENT_STEP_ID%`,
       flow: `%TYPE% %TIME% %ID% %NAME% %VERSION% %STEPS% %DURATION% %STATUS% %PARENT_ID% %PARENT_STEP_ID% %ERR_MSG%`,
       data: `%TYPE% %TIME% %ID% %LAST_STEP% %MSG% %DATA%`,
     };
