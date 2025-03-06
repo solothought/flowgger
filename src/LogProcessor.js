@@ -1,5 +1,6 @@
 import {formatDate} from "./util.js";
 import FlowggerError from "./FlowggerError.js";
+import FlowLogger from "./FlowLogger.js";
 
 /**
  * Holds info of a flow in progress.
@@ -12,7 +13,7 @@ class FlowLog{
    * @param {string} key // index key to fetch flow directly: flowname(vesion)
    * @param {string} flowName 
    * @param {string} version 
-   * @param {*} parentFlow 
+   * @param {FlowLogger} parentFlow 
    */
   constructor(flowObj, flowId, key, flowName, version, parentFlow){
     this.id= flowId,
@@ -130,7 +131,7 @@ export default class LogProcessor{
     if(this.#logFlows[logRecord.id]){
       this.#updateLogRecord(logRecord, msg);
     }else{
-      this.recordErr(logRecord, `Unexpected step ${msg}`);
+      this.recordErr(logRecord, `Unexpected step: ${msg}`);
     }
 
   }
@@ -178,20 +179,35 @@ export default class LogProcessor{
     if(this.#logFlows[logRecord.id]){
       const flowData = this.#flows[logRecord.key];
       const links = flowData.links[logRecord.lastStep.id];
-      //check if last step was ending step
-      if(!links || links.includes(-1)){
+      //valid ending
+      //- if last step is an ending step
+      //- if last step is not -1
+      if(logRecord.lastStep.id !== -1 && links.includes(-1)){
         //end the flow
         this.flush(logRecord);
       }else{// invalid ending
         logRecord.failed = true;
-        logRecord.errMsg = `Flow is ended after step: ${flowData.steps[logRecord.lastStep.id].msg}`;
+        if(logRecord.lastStep.id === -1){
+          logRecord.errMsg = `Flow is ended before taking any step`;
+        }else{
+          logRecord.errMsg = `Flow is ended after step: ${flowData.steps[logRecord.lastStep.id].msg}`;
+        }
         //log error
         this.recordErr(logRecord,logRecord.errMsg);
         //end the flow
         this.flush(logRecord);
+        this.failParent(logRecord);
       }
     }else{// flow object is removed
       //do nothing
+    }
+  }
+
+  failParent(lr){
+    if(lr.parentFlow){
+      lr.parentFlow.flow.failed = true;
+      lr.parentFlow.flow.errMsg = "Subflow failed";
+      lr.parentFlow.lp.flush(lr.parentFlow.flow);
     }
   }
 
@@ -229,6 +245,7 @@ export default class LogProcessor{
       this.recordErr(logRecord,logRecord.errMsg);
       //end the flow
       this.flush(logRecord);
+      this.failParent(logRecord);
     }
   }
 

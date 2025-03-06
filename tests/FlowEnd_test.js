@@ -13,6 +13,10 @@ describe("Flowgger", function() {
             const fName = `${lr.flowName}(${lr.version})`;
             if(lvl === "info" && !lr.steps){
               return fName;
+            }else if(lvl === "error"){
+              return `${lr.msg},${lr.lastStepId}`;
+            }else if(lvl === "debug"){
+              return `${lr.msg},${lr.lastStepId}`;
             }else{
               //remove exec time
               const seq = [];
@@ -21,6 +25,7 @@ describe("Flowgger", function() {
               })
               return `${lr.success},${fName},[${seq}]`;
             }
+    
           }
         }
       ],
@@ -103,5 +108,23 @@ describe("Flowgger", function() {
       expect(appender.streamData).toEqual(expected);
       done();
     }, 500);
+  });
+
+  it("should error when no step is taken", function() {
+    appender.streamData = [];
+    const expected = [
+      [ 'info', 'first flow(0.0.1)' ],
+      [ 'error', 'Flow is ended before taking any step,-1' ],
+      [ 'info', 'false,first flow(0.0.1),[]' ]
+    
+    ]
+
+    const logInstance = flowgger.init("first flow");
+    // logInstance.info("this is the sample flow")
+    // logInstance.info("until the next condition is true")
+    logInstance.end();
+
+    // console.log(appender.streamData);
+    expect(appender.streamData).toEqual(expected);
   });
 });
