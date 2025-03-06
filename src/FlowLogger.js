@@ -83,14 +83,7 @@ export default class FlowLogger{
       throw Error(`Provide brief detail about warning data through first parameter.`);
     this.lp.logWarn(this.flow, msg, data, key);
   }
-  /**
-   * Data would be written to error stream.
-   * All the inprogress logs would also be written to error stream 
-   * @param {any} data 
-   */
-  fatal(data){
-    this.lp.flushAll(data);
-  }
+
   end(){
     this.lp.end(this.flow);
   }

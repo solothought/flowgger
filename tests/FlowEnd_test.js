@@ -1,4 +1,5 @@
 import Flowgger from "../src/Flowgger.js";
+import FlowggerError from "../src/FlowggerError.js";
 import path from "path";
 import TestAppender from "./TestAppender.js";
 
