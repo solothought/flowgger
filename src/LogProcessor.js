@@ -29,13 +29,6 @@ class FlowLog{
     this.errMsg = "";
   }
 
-  isExceed(threshold){
-    return (Date.now() - this.startTime) > threshold;
-  }
-  lastParentStep(){
-    return this.parentFlow.seq[this.parentFlow.seq.length-1];
-  }
-
   headLog(){
     const response = {
       id: this.id,
@@ -274,10 +267,6 @@ export default class LogProcessor{
   }
 
   flushAll(msg){
-
-    // log(`Flushing all messages at ${formatDate()}`,flow.streams["error"], "error");
-    // log(data, flow.streams["error"], "error");
-
     for(const logId in this.#logFlows){
       const flowLog = this.#logFlows[logId];
       const flowStream = this.#flows[flowLog.key].streams["flows"];
