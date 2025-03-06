@@ -273,16 +273,29 @@ export default class LogProcessor{
     delete this.#logFlows[logRecord.id];
   }
 
-  flushAll(data){
-    log(`Flushing all messages at ${formatDate()}`,flow.streams["error"], "error");
-    log(data, flow.streams["error"], "error");
+  flushAll(msg){
 
-    for(const logid in this.#logFlows){
+    // log(`Flushing all messages at ${formatDate()}`,flow.streams["error"], "error");
+    // log(data, flow.streams["error"], "error");
+
+    for(const logId in this.#logFlows){
       const flowLog = this.#logFlows[logId];
-      log({
-         id:flowLog.id,
-         steps:flowLog.stepsSeq
-        },flow.streams["error"], "error");
+      const flowStream = this.#flows[flowLog.key].streams["flows"];
+      const record =  {
+        success: false,
+        flowName: flowLog.name,
+        version: flowLog.version,
+        id: flowLog.id,
+        reportTime: flowLog.startTime,
+        steps: flowLog.stepsSeq,
+        errMsg: msg,
+      }
+      if(flowLog.parentFlow){
+        record.parentFlowId = flowLog.parentFlow.id
+        record.parentStepId = flowLog.parentFlow.flow.lastStep.id;
+      }
+
+      log(record,flowStream, "info");
     }
     this.#logFlows = {};
   }

@@ -35,6 +35,14 @@ export default class Flowgger {
   pause(config){
     this.logProcessor.pause(config);
   }
+
+  /**
+   * Flush all the active flows. 
+   * Helps to clear memory or before shutting down the application.
+   */
+  flush(msg){
+    this.logProcessor.flushAll(msg);
+  }
 }
 
 /**

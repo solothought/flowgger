@@ -26,3 +26,13 @@ LOOP 4 times
   IF true
     mark it complete
     STOP
+
+FLOW: 3rd flow
+version: 1
+first step
+partial ending step
+LOOP 4 times
+  until the next condition is true
+  IF true
+    mark it complete
+    STOP
