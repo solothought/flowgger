@@ -44,7 +44,7 @@ class FlowLog{
     }
     if(this.parentFlow){
       response.parentFlowId = this.parentFlow.id;
-      response.parentStepId = this.parentFlow.seq[this.parentFlow.seq.length-1];
+      response.parentStepId = this.parentFlow.flow.lastStep.id;
     }
     return response;
   }
@@ -61,7 +61,7 @@ class FlowLog{
     }
     if(this.parentFlow){
       response.parentFlowId = this.parentFlow.id
-      response.parentStepId = this.parentFlow.seq[this.parentFlow.seq.length-1]
+      response.parentStepId = this.parentFlow.flow.lastStep.id;
     }
     return response;
   }
@@ -179,7 +179,7 @@ export default class LogProcessor{
       const flowData = this.#flows[logRecord.key];
       const links = flowData.links[logRecord.lastStep.id];
       //check if last step was ending step
-      if(links.includes(-1)){
+      if(!links || links.includes(-1)){
         //end the flow
         this.flush(logRecord);
       }else{// invalid ending

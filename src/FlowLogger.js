@@ -11,8 +11,8 @@ export default class FlowLogger{
   constructor(flowName, version, logProcessor, parentFlow){
     this.flowName = flowName;
     this.lp = logProcessor;
-    this.flow = logProcessor.register(flowName, version);
-    this.flow.parentFlow = parentFlow;
+    this.flow = logProcessor.register(flowName, version, parentFlow);
+    // this.flow.parentFlow = parentFlow;
   }
   /**
    * Use to match with the flow
