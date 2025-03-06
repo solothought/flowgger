@@ -1,6 +1,14 @@
 
 <small>Note: If you find missing information about particular minor version, that version must have been changed without any functional change in this library.</small>
 
+**1.0.0-beta.2 / 2025-03-06**
+- Replace CSV layout with PatternLayout
+- Support `flush` to clean all active scenarios
+- remove fatal level
+- fix subflows
+- fix edge case scenarios
+- fix trace level logs
+
 **1.0.0-beta.1 / 2025-03-05**
 - Fix CSV layout to handle special chars and change steps pattern
 

@@ -1,6 +1,6 @@
 {
   "name": "@solothought/flowgger",
-  "version": "1.0.0-beta.1",
+  "version": "1.0.0-beta.2",
   "description": "Logging framework for predefined flows",
   "main": "./dist/flowgger.cjs",
   "type": "module",
