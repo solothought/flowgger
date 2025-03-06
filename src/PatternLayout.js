@@ -84,9 +84,6 @@ export default class PatternLayout{
   error(lr){
     return this.#data(lr, "ERROR");
   }
-  fatal(lr){
-    return this.#data(lr, "FATAL");
-  }
 
   #data(lr, lvl, data){
     let logMsg = this.#pattern.data;

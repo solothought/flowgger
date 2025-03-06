@@ -54,6 +54,7 @@ export class Flowgger {
   init(flowName: string): FlowInstance;
   play(playconfig: PlayPauseConfig): void;
   pause(pauseconfig: PlayPauseConfig): void;
+  flush(msg: string): void;
 }
 
 // Flow instance methods
@@ -62,7 +63,6 @@ export interface FlowInstance {
   debug(message: string, data?: Record<string, any>, key?: string): void;
   warn(message: string, data?: Record<string, any>, key?: string): void;
   error(message: string, data?: Record<string, any>, key?: string): void;
-  fatal(message: string, data?: Record<string, any>): void;
   end(): void;
 }
 

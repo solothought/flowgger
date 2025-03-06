@@ -45,6 +45,5 @@ export default class PatternLayout {
   warn(lr: LogRecord): string;
   trace(lr: LogRecord): string;
   error(lr: LogRecord): string;
-  fatal(lr: LogRecord): string;
 
 }
