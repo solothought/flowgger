@@ -1,5 +1,10 @@
 import {branchTypes} from "./constants.js";
 
+/**
+ * 
+ * @param {object} flow 
+ * @returns {[]}
+ */
 function findStartSteps(flow){
   let start = new Set();
   const stack = [0];
@@ -10,7 +15,7 @@ function findStartSteps(flow){
     if (visited.has(link)) continue; // Skip already processed steps
     visited.add(link);
       
-    if(branchTypes.has(flow.steps[link].type)){
+    if(flow.steps[link] && branchTypes.has(flow.steps[link].type)){
       flow.links[link].forEach( stepId => {
         stack.push(stepId);
       });
