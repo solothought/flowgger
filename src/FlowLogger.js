@@ -11,7 +11,7 @@ export default class FlowLogger{
   constructor(flowName, version, logProcessor, headMsg, parentFlow){
     this.flowName = flowName;
     this.lp = logProcessor;
-    this.flow = logProcessor.register(flowName, version, headMsg, parentFlow);
+    this.logRecord = logProcessor.register(flowName, version, headMsg, parentFlow);
     // this.flow.parentFlow = parentFlow;
   }
   /**
@@ -21,7 +21,7 @@ export default class FlowLogger{
   info(msg){
     if(typeof msg !== "string") 
       throw Error(`info method supports only string . and it must be present in ${this.flowName}`);
-    this.lp.record(this.flow, msg);
+    this.lp.record(this.logRecord, msg);
   }
   /**
    * Use to match with the flow
@@ -45,7 +45,7 @@ export default class FlowLogger{
       enhancedData = data;
     }
 
-    this.lp.logError(this.flow, msg, enhancedData, key);
+    this.lp.logError(this.logRecord, msg, enhancedData, key);
   }
   /**
    * Use to log extra information
@@ -56,7 +56,7 @@ export default class FlowLogger{
   debug(msg, data="", key){
     if(typeof msg !== "string") 
       throw Error(`Provide brief detail about debug data detail through first parameter.`);
-    this.lp.logDebug(this.flow, msg, data, key);
+    this.lp.logDebug(this.logRecord, msg, data, key);
   }
   /**
    * Use to log extra information
@@ -69,7 +69,7 @@ export default class FlowLogger{
 
     const err = new Error();
     const stackTrace = err.stack.split('\n').slice(2).join('\n'); // Skip the first two lines
-    this.lp.logTrace(this.flow, msg, stackTrace, key);
+    this.lp.logTrace(this.logRecord, msg, stackTrace, key);
   }
 
     /**
@@ -81,10 +81,10 @@ export default class FlowLogger{
   warn(msg, data="", key){
     if(typeof msg !== "string") 
       throw Error(`Provide brief detail about warning data through first parameter.`);
-    this.lp.logWarn(this.flow, msg, data, key);
+    this.lp.logWarn(this.logRecord, msg, data, key);
   }
 
   end(){
-    this.lp.end(this.flow);
+    this.lp.end(this.logRecord);
   }
 }

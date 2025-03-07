@@ -1,93 +1,23 @@
-import {formatDate} from "./util.js";
 import FlowggerError from "./FlowggerError.js";
 import FlowLogger from "./FlowLogger.js";
+import LogRecord from "./LogRecord.js";
 
-/**
- * Holds info of a flow in progress.
- */
-class FlowLog{
-  /**
-   * 
-   * @param {*} flowObj 
-   * @param {*} flowId 
-   * @param {string} key // index key to fetch flow directly: flowname(vesion)
-   * @param {string} flowName 
-   * @param {string} version 
-   * @param {FlowLogger} parentFlow 
-   */
-  constructor(flowObj, flowId, key, flowName, version, headMsg, parentFlow){
-    this.id= flowId,
-    this.name = flowName;
-    this.key = key;
-    this.version = version;
-    this.headMsg = headMsg;
-    this.nextExpecteSteps = flowObj.startSteps;
-    this.startTime = Date.now();
-    this.lastStep= {id: -1, startTime: this.startTime};
-    this.stepsSeq= []; // [[step id, exe time], [step id, exe time]]
-    this.failed= false;
-    this.parentFlow = parentFlow;
-    this.errMsg = "";
-  }
 
-  headLog(){
-    const response = {
-      id: this.id,
-      flowName: this.name,
-      version: this.version,
-      reportTime: this.startTime,
-      headMsg: this.headMsg
-    }
-    if(this.parentFlow){
-      response.parentFlowId = this.parentFlow.id;
-      response.parentStepId = this.parentFlow.flow.lastStep.id;
-    }
-    return response;
-  }
-
-  flowLog(){
-    const response =  {
-      success: this.failed ? false: true,
-      flowName: this.name,
-      version: this.version,
-      id: this.id,
-      reportTime: this.startTime,
-      steps: this.stepsSeq,
-      errMsg: this.errMsg // when success is false
-    }
-    if(this.parentFlow){
-      response.parentFlowId = this.parentFlow.id
-      response.parentStepId = this.parentFlow.flow.lastStep.id;
-    }
-    return response;
-  }
-  dataLog(msg, data){
-    return {
-      id: this.id,
-      flowName: this.name,
-      version: this.version,
-      lastStepId: this.lastStep.id,
-      msg,
-      data,
-      reportTime: Date.now(),
-    }
-  }
-
-}
 
 export default class LogProcessor{
   // #config;
-  #logFlows; //ExpirableList
+  /**
+   * { flowId: LogRecord}
+   */
+  #logRecords;
   #flows;    //flows{} from .stflow files (key: flowname+headerkey)
 
   constructor(config, flows){
     // this.#config = config;
     //TODO: decide he capacity of each queue base on avg run time or number of items in queues
     // this.queues = 
-    this.#logFlows = {};
+    this.#logRecords = new Map();
     this.#flows = flows;
-    // console.debug(this.#flows);
-    // console.debug(this.#flows["second flow(1)"]);
     this.logDebug = this.recordData;
     this.logWarn = this.recordWarn;
     this.logError = this.recordErr;
@@ -100,9 +30,11 @@ export default class LogProcessor{
    * Write to head stream
    * @param {string} flowName name of flow defined in some .stflow file
    * @param {string} version value of flow header defined in config
-   * @returns {FlowLog}
+   * @param {string} headMsg 
+   * @param {FlowLogger} parentFlowLoggerInstance 
+   * @returns {LogRecord}
    */
-  register(flowName, version, headMsg = "", parentFlow){
+  register(flowName, version, headMsg = "", parentFlowLoggerInstance){
     let key = `${flowName}(${version})`;
 
     const flow = this.#flows[key];
@@ -110,8 +42,12 @@ export default class LogProcessor{
     if(!flow) throw new FlowggerError(`Invalid Flow name: ${flowName}, or version`);
     
     const flowId = logId();
-    const logRecord = new FlowLog(flow, flowId, key, flowName, version, headMsg, parentFlow);
-    this.#logFlows[flowId] = logRecord;
+    const logRecord = new LogRecord(flowId, flowName, version, key, flow.startSteps, headMsg);
+      if(parentFlowLoggerInstance){
+        logRecord.parentFlowId = parentFlowLoggerInstance.logRecord.id;
+        logRecord.parentStepId = parentFlowLoggerInstance.logRecord.lastStep.id;
+      }
+    this.#logRecords.set(flowId,logRecord);
 
     //acknowledge
     log(logRecord.headLog(),flow.streams["head"],"info");
@@ -123,7 +59,7 @@ export default class LogProcessor{
     // Log record would be removed on incorrect logging
     // or if dead-end step is logged
     // Hence, it needs to be confirmed on each call
-    if(this.#logFlows[logRecord.id]){
+    if(this.#logRecords.has(logRecord.id)){
       this.#updateLogRecord(logRecord, msg);
     }else{
       this.recordErr(logRecord, `Unexpected step: ${msg}`);
@@ -146,7 +82,7 @@ export default class LogProcessor{
 
   /**
    * Log additional data to error stream which is not the part of the flow
-   * @param {FlowLog} logRecord
+   * @param {LogRecord} logRecord
    * @param {string} msg Short msg about data 
    * @param {any} data data to log 
    * @param {string} streamType where to log 
@@ -171,7 +107,7 @@ export default class LogProcessor{
    * @param {number} time 
    */
   end(logRecord){
-    if(this.#logFlows[logRecord.id]){
+    if(this.#logRecords.has(logRecord.id)){
       const flowData = this.#flows[logRecord.key];
       const links = flowData.links[logRecord.lastStep.id];
       //valid ending
@@ -199,17 +135,19 @@ export default class LogProcessor{
   }
 
   failParent(lr){
-    if(lr.parentFlow){
-      lr.parentFlow.flow.failed = true;
-      lr.parentFlow.flow.errMsg = "Subflow failed";
-      lr.parentFlow.lp.flush(lr.parentFlow.flow);
+    if(lr.parentFlowId){
+      const parentLogRecord = this.#logRecords.get(lr.parentFlowId);
+      parentLogRecord.failed = true;
+      parentLogRecord.errMsg = "Subflow failed";
+      
+      this.flush(parentLogRecord);
     }
   }
 
   /**
    * check if the the given log msg is expected. 
    * Update the last step and log message accordingly. 
-   * @param {FlowLog} logRecord 
+   * @param {LogRecord} logRecord 
    * @param {string} msg 
    */
   #updateLogRecord(logRecord, msg){
@@ -246,7 +184,7 @@ export default class LogProcessor{
 
   /**
    * Build log msg of steps with execution time if asked or exceed
-   * @param {FlowLog} logRecord 
+   * @param {LogRecord} logRecord 
    * @param {number} currentStepIndex 
    * @param {number} timeNow 
    */
@@ -260,17 +198,17 @@ export default class LogProcessor{
   /**
    * log message to main stream
    * and delete log record from memory
-   * @param {FlowLog} logRecord 
+   * @param {LogRecord} logRecord 
    */
   flush(logRecord){
     const flow = this.#flows[logRecord.key];
     log(logRecord.flowLog(),flow.streams["flows"], "info");
-    delete this.#logFlows[logRecord.id];
+    this.#logRecords.delete(logRecord.id);
   }
 
   flushAll(msg){
-    for(const logId in this.#logFlows){
-      const flowLog = this.#logFlows[logId];
+    for(const [logId,flowLog] of this.#logRecords){
+      // const flowLog = this.#logFlows.get(logId);
       const flowStream = this.#flows[flowLog.key].streams["flows"];
       const record =  {
         success: false,
@@ -281,14 +219,14 @@ export default class LogProcessor{
         steps: flowLog.stepsSeq,
         errMsg: msg,
       }
-      if(flowLog.parentFlow){
-        record.parentFlowId = flowLog.parentFlow.id
-        record.parentStepId = flowLog.parentFlow.flow.lastStep.id;
+      if(flowLog.parentFlowId){
+        record.parentFlowId = flowLog.parentFlowId
+        record.parentStepId = flowLog.parentStepId;
       }
 
       log(record,flowStream, "info");
     }
-    this.#logFlows = {};
+    this.#logRecords = new Map();
   }
 
   /**
