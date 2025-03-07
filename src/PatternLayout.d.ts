@@ -7,6 +7,7 @@ export interface LogRecord {
   status?: string;
   parentFlowId?: string;
   parentStepId?: string;
+  headMsg?: string;
   msg?: string;
   errMsg?: string;
   data?: any;

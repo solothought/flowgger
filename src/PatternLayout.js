@@ -4,7 +4,7 @@ export default class PatternLayout{
   #pattern
   constructor(pattern){
     this.#pattern = {
-      head: `%TYPE% %TIME% %ID% %NAME% %VERSION%  %PARENT_ID% %PARENT_STEP_ID%`,
+      head: `%TYPE% %TIME% %ID% %NAME% %VERSION% %HEAD_MSG% %PARENT_ID% %PARENT_STEP_ID%`,
       flow: `%TYPE% %TIME% %ID% %NAME% %VERSION% %STEPS% %DURATION% %STATUS% %PARENT_ID% %PARENT_STEP_ID% %ERR_MSG%`,
       data: `%TYPE% %TIME% %ID% %LAST_STEP% %MSG% %DATA%`,
     };
@@ -53,7 +53,11 @@ export default class PatternLayout{
   head(lr){
     let logMsg = this.#pattern.head;
     logMsg = this.#fillCommonProperties(lr, logMsg, "HEAD");
-
+    let headMsg = "";
+    if(lr.headMsg){
+      headMsg = this.#applyMaskingRules(lr.headMsg);
+    }
+    logMsg = logMsg.replace("%HEAD_MSG%", lr.headMsg ? `[${lr.headMsg}]` : "");
     logMsg = logMsg.replace("%PARENT_ID%", lr.parentFlowId || "");
     logMsg = logMsg.replace("%PARENT_STEP_ID%", lr.parentStepId || "");
     
@@ -64,6 +68,7 @@ export default class PatternLayout{
     
     logMsg = this.#fillCommonProperties(lr, logMsg, "FLOW");
 
+    logMsg = logMsg.replace("%HEAD_MSG%", lr.headMsg || "");
     logMsg = logMsg.replace("%STEPS%", stepsStr(lr.steps));
     logMsg = logMsg.replace("%DURATION%", String(Date.now()-lr.reportTime));
     logMsg = logMsg.replace("%STATUS%", lr.success ? 1:0);
@@ -161,28 +166,4 @@ export default class PatternLayout{
 
 function stepsStr(steps){
   return steps.join(">").replaceAll(",",":")
-}
-
-
-
-/**
- * Replace Special character for CSV data
- * @param {any} value 
- * @returns {string}
- */
-function sanitizeForCSV(value) {
-  if (!value) return "";
-  if (typeof value !== 'string') {
-      value = String(value);
-  }
-  
-  // Escape double quotes by doubling them
-  value = value.replace(/"/g, '""');
-  
-  // If the value contains a comma, newline, or double-quote, enclose it in double quotes
-  if (/[,"\n\r]/.test(value)) {
-      value = `"${value}"`;
-  }
-
-  return value;
 }

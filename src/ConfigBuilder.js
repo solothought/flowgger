@@ -33,7 +33,6 @@ export const deaultConfig = {
     // maxIdleTime: 200,       //time difference between 2 consecutive steps
     // maxFlowsCapacity: 1000  //active flows. TODO: manage number of open active flows in memory
   },
-  layout: ""
 };
 
 export function validateConfig(config) {

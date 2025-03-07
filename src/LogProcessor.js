@@ -15,11 +15,12 @@ class FlowLog{
    * @param {string} version 
    * @param {FlowLogger} parentFlow 
    */
-  constructor(flowObj, flowId, key, flowName, version, parentFlow){
+  constructor(flowObj, flowId, key, flowName, version, headMsg, parentFlow){
     this.id= flowId,
     this.name = flowName;
     this.key = key;
     this.version = version;
+    this.headMsg = headMsg;
     this.nextExpecteSteps = flowObj.startSteps;
     this.startTime = Date.now();
     this.lastStep= {id: -1, startTime: this.startTime};
@@ -35,6 +36,7 @@ class FlowLog{
       flowName: this.name,
       version: this.version,
       reportTime: this.startTime,
+      headMsg: this.headMsg
     }
     if(this.parentFlow){
       response.parentFlowId = this.parentFlow.id;
@@ -100,7 +102,7 @@ export default class LogProcessor{
    * @param {string} version value of flow header defined in config
    * @returns {FlowLog}
    */
-  register(flowName, version, parentFlow){
+  register(flowName, version, headMsg = "", parentFlow){
     let key = `${flowName}(${version})`;
 
     const flow = this.#flows[key];
@@ -108,7 +110,7 @@ export default class LogProcessor{
     if(!flow) throw new FlowggerError(`Invalid Flow name: ${flowName}, or version`);
     
     const flowId = logId();
-    const logRecord = new FlowLog(flow, flowId, key, flowName, version, parentFlow);
+    const logRecord = new FlowLog(flow, flowId, key, flowName, version, headMsg, parentFlow);
     this.#logFlows[flowId] = logRecord;
 
     //acknowledge

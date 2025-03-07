@@ -8,10 +8,10 @@ export default class FlowLogger{
    * @param {string} flowName 
    * @param {LogProcessor} logProcessor 
    */
-  constructor(flowName, version, logProcessor, parentFlow){
+  constructor(flowName, version, logProcessor, headMsg, parentFlow){
     this.flowName = flowName;
     this.lp = logProcessor;
-    this.flow = logProcessor.register(flowName, version, parentFlow);
+    this.flow = logProcessor.register(flowName, version, headMsg, parentFlow);
     // this.flow.parentFlow = parentFlow;
   }
   /**

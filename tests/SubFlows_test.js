@@ -52,7 +52,7 @@ describe("Subflows", function() {
     flow.info("read high");
     flow.info("calculate mid");
     flow.info("update boundaries");
-    const subflow = flowgger.init("update boundaries","0.0.1",flow);
+    const subflow = flowgger.init("update boundaries","0.0.1",null,flow);
     subflow.info("update low to mid + 1");
     // subflow.end(); //ending a flow is optional when end step is already called
     flow.end();
@@ -80,7 +80,7 @@ describe("Subflows", function() {
     flow.info("read high");
     flow.info("calculate mid");
     flow.info("update boundaries");
-    const subflow = flowgger.init("update boundaries","0.0.1",flow);
+    const subflow = flowgger.init("update boundaries","0.0.1",null,flow);
     // subflow.info("update low to mid + 1");
     subflow.end();
     flow.end();
@@ -111,7 +111,7 @@ describe("Subflows", function() {
     flow.info("read high");
     flow.info("calculate mid");
     flow.info("update boundaries");
-    const subflow = flowgger.init("update boundaries","0.0.1",flow);
+    const subflow = flowgger.init("update boundaries","0.0.1",null,flow);
     // subflow.info("update low to mid + 1");
     subflow.end();
     flow.info("read low");

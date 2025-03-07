@@ -25,8 +25,8 @@ export default class Flowgger {
     this.logProcessor = new LogProcessor(this.config, flowsReader.flows);
   }
 
-  init(flowName, version = "0.0.1", parentFlow){
-    return new FlowLogger(flowName, version, this.logProcessor, parentFlow);
+  init(flowName, version = "0.0.1", headMsg= "", parentFlow){
+    return new FlowLogger(flowName, version, this.logProcessor, headMsg, parentFlow);
   }
 
   play(config){

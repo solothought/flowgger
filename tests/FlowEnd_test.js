@@ -13,7 +13,8 @@ describe("Flowgger", function() {
           layout: (lr,lvl) => { //can be a function or object
             const fName = `${lr.flowName}(${lr.version})`;
             if(lvl === "info" && !lr.steps){
-              return fName;
+              if(lr.headMsg) return `${fName},${lr.headMsg}`
+              else return fName;
             }else if(lvl === "error"){
               return `${lr.msg},${lr.lastStepId}`;
             }else if(lvl === "debug"){
@@ -41,11 +42,11 @@ describe("Flowgger", function() {
     appender.streamData = [];
     
     const expected = [
-      [ 'info', 'first flow(0.0.1)' ],
+      [ 'info', 'first flow(0.0.1),initial message for identification' ],
       [ 'info', 'true,first flow(0.0.1),[0,2,2,4]' ]
     ]
     
-    const flow = flowgger.init("first flow");
+    const flow = flowgger.init("first flow", "0.0.1", "initial message for identification");
 
     flow.info("this is the sample flow") //0
     flow.info("until the next condition is true") //2
