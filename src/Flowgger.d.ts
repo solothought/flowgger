@@ -72,10 +72,13 @@ export interface FlowInstance {
 export class ConsoleAppender implements Appender {
   append(logRecord: LogRecord, level: string): void;
 }
-export class FileAppender implements Appender {
+export class SyserrAppender implements Appender {
   append(logRecord: LogRecord, level: string): void;
 }
-export class Log4jsAdapter implements Appender{
+export class SysoutAppender implements Appender {
   append(logRecord: LogRecord, level: string): void;
 }
 
+export class Log4jsAdapter implements Appender{
+  append(logRecord: LogRecord, level: string): void;
+}

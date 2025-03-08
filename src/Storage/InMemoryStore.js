@@ -1,6 +1,5 @@
 export default class InMemoryStore {
   constructor() {
-    super();
     // this.store = new Map();
     this.store;
   }

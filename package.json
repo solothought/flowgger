@@ -1,6 +1,6 @@
 {
   "name": "@solothought/flowgger",
-  "version": "1.0.0-beta.2",
+  "version": "1.0.0-beta.3",
   "description": "Logging framework for predefined flows",
   "main": "./dist/flowgger.cjs",
   "type": "module",
@@ -17,10 +17,9 @@
         "default": "./dist/flowgger.cjs"
       }
     },
-    "./ConsoleAppender": {
+    "./appenders": {
       "import": {
-        "types": "./src/Flowgger.d.ts",
-        "default": "./src/appenders/ConsoleAppender.js"
+        "default": "./src/Appenders.js"
       }
     },
     "./PatternLayout": {
