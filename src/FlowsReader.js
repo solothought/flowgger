@@ -41,7 +41,7 @@ export default class FlowsReader{
       addStreamsProperty(flow);
       //version is mandatory
       if(!flow.headers[dHeader]) flow.headers[dHeader] = "0.0.1";
-      flow.uName = `${flow.name}(${flow.headers[dHeader]})`;;
+      flow.uName = `${this.config.storeKeyPrefix}${flow.name}(${flow.headers[dHeader]})`;;
       newFlows[flow.uName] = flow;
       this.#updateExecutionTime(flow);
     });

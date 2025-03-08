@@ -7,16 +7,16 @@ export default class LogRecord{
    * @param {string} flowId 
    * @param {string} flowName 
    * @param {string} version Eg "0.0.1"
-   * @param {string} mapKey `flowname(vesion)` to access flow object from map
+   * @param {string} storeKey `flowname(vesion)` to access flow object from map
    * @param {object} startSteps Eg: {1:[0],6:[3,-1]}
    * @param {string} headMsg initial message
    * @param {number} parentFlowId 
    * @param {number} parentStepId 
    */
-  constructor(flowId, flowName, version, mapKey, startSteps, headMsg = "", parentFlowId, parentStepId){
+  constructor(flowId, flowName, version, storeKey, startSteps, headMsg = "", parentFlowId, parentStepId){
     this.id= flowId,
     this.name = flowName;
-    this.key = mapKey;
+    this.storeKey = storeKey;
     this.version = version;
     this.headMsg = headMsg;
     this.nextExpecteSteps = startSteps;
@@ -81,7 +81,7 @@ export default class LogRecord{
       lr.id,
       lr.name,
       lr.version,
-      lr.key,
+      lr.storeKey,
       lr.startSteps,
       lr.headMsg,
       lr.parentFlowId,

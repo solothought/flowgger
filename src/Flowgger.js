@@ -12,8 +12,6 @@ import {deaultConfig, validateConfig} from "./ConfigBuilder.js";
 export default class Flowgger {
   constructor(userConfig = {}) {
     this.config = Object.assign({}, deaultConfig, userConfig);
-    // this.config = deepMerge({}, deaultConfig, userConfig);
-    // console.log(this.config);
     validateConfig(this.config);
 
     //read flows
@@ -37,7 +35,7 @@ export default class Flowgger {
   }
 
   /**
-   * Flush all the active flows. 
+   * Flush all the active flows from store to streams. 
    * Helps to clear memory or before shutting down the application.
    */
   flush(msg){

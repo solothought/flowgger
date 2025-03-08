@@ -16,7 +16,9 @@ export default class LogProcessor{
     // this.#config = config;
     //TODO: decide he capacity of each queue base on avg run time or number of items in queues
     // this.queues = 
-    this.#logRecords = new Map();
+    this.#logRecords = config.store;
+    this.#logRecords.init(config.storeKeyPrefix || "");
+    this.storeKeyPrefix = config.storeKeyPrefix|| "";
     this.#flows = flows;
     this.logDebug = this.recordData;
     this.logWarn = this.recordWarn;
@@ -35,14 +37,14 @@ export default class LogProcessor{
    * @returns {LogRecord}
    */
   register(flowName, version, headMsg = "", parentFlowLoggerInstance){
-    let key = `${flowName}(${version})`;
+    let storeKey = `${this.storeKeyPrefix}${flowName}(${version})`;
 
-    const flow = this.#flows[key];
+    const flow = this.#flows[storeKey];
     // console.debug(this.#flows);
     if(!flow) throw new FlowggerError(`Invalid Flow name: ${flowName}, or version`);
     
     const flowId = logId();
-    const logRecord = new LogRecord(flowId, flowName, version, key, flow.startSteps, headMsg);
+    const logRecord = new LogRecord(flowId, flowName, version, storeKey, flow.startSteps, headMsg);
       if(parentFlowLoggerInstance){
         logRecord.parentFlowId = parentFlowLoggerInstance.logRecord.id;
         logRecord.parentStepId = parentFlowLoggerInstance.logRecord.lastStep.id;
@@ -67,17 +69,17 @@ export default class LogProcessor{
 
   }
 
-  recordErr(logRecord, msg, data="", key){
-    this.#recordLog(logRecord,msg,data,"error","error",key);
+  recordErr(logRecord, msg, data="", filterKey){
+    this.#recordLog(logRecord,msg,data,"error","error",filterKey);
   }
-  recordData(logRecord, msg, data, key){
-    this.#recordLog(logRecord,msg,data,"data","debug",key);
+  recordData(logRecord, msg, data, filterKey){
+    this.#recordLog(logRecord,msg,data,"data","debug",filterKey);
   }
-  recordWarn(logRecord, msg, data, key){
-    this.#recordLog(logRecord,msg,data,"data","warn",key);
+  recordWarn(logRecord, msg, data, filterKey){
+    this.#recordLog(logRecord,msg,data,"data","warn",filterKey);
   }
-  recordTrace(logRecord, msg, data, key){
-    this.#recordLog(logRecord,msg,data,"data","trace",key);
+  recordTrace(logRecord, msg, data, filterKey){
+    this.#recordLog(logRecord,msg,data,"data","trace",filterKey);
   }
 
   /**
@@ -87,11 +89,11 @@ export default class LogProcessor{
    * @param {any} data data to log 
    * @param {string} streamType where to log 
    * @param {string} logLevel log level 
-   * @param {string} key play/pause logs
+   * @param {string} filterKey play/pause logs
    */
-  #recordLog(logRecord, msg, data, streamType, logLevel, key){
-    if(key && !this.playingKeys.has(key)) return;
-    const flow = this.#flows[logRecord.key];
+  #recordLog(logRecord, msg, data, streamType, logLevel, filterKey){
+    if(filterKey && !this.playingKeys.has(filterKey)) return;
+    const flow = this.#flows[logRecord.storeKey];
     if(flow.paused) return;
     log(logRecord.dataLog(msg, data),flow.streams[streamType],logLevel);
   }
@@ -103,12 +105,11 @@ export default class LogProcessor{
    * Signal the ending of a flow.
    * It helps to flush a log record immediately. 
    * It also helps when the current step may be pointing to end and non-ending step.
-   * @param {string} id 
-   * @param {number} time 
+   * @param {LogRecord} logRecord 
    */
   end(logRecord){
     if(this.#logRecords.has(logRecord.id)){
-      const flowData = this.#flows[logRecord.key];
+      const flowData = this.#flows[logRecord.storeKey];
       const links = flowData.links[logRecord.lastStep.id];
       //valid ending
       //- if last step is an ending step
@@ -151,7 +152,7 @@ export default class LogProcessor{
    * @param {string} msg 
    */
   #updateLogRecord(logRecord, msg){
-    const flow = this.#flows[logRecord.key];
+    const flow = this.#flows[logRecord.storeKey];
     const stepIndex = flow.stepsIndex[msg];
 
     const matchedId = logRecord.nextExpecteSteps.includes(stepIndex);
@@ -201,32 +202,32 @@ export default class LogProcessor{
    * @param {LogRecord} logRecord 
    */
   flush(logRecord){
-    const flow = this.#flows[logRecord.key];
+    const flow = this.#flows[logRecord.storeKey];
     log(logRecord.flowLog(),flow.streams["flows"], "info");
     this.#logRecords.delete(logRecord.id);
   }
 
   flushAll(msg){
-    for(const [logId,flowLog] of this.#logRecords){
-      // const flowLog = this.#logFlows.get(logId);
-      const flowStream = this.#flows[flowLog.key].streams["flows"];
+    for(const logId of this.#logRecords.keys()){
+      const logRecord = this.#logRecords.get(logId);
+      const flowStream = this.#flows[logRecord.storeKey].streams["flows"];
       const record =  {
         success: false,
-        flowName: flowLog.name,
-        version: flowLog.version,
-        id: flowLog.id,
-        reportTime: flowLog.startTime,
-        steps: flowLog.stepsSeq,
+        flowName: logRecord.name,
+        version: logRecord.version,
+        id: logRecord.id,
+        reportTime: logRecord.startTime,
+        steps: logRecord.stepsSeq,
         errMsg: msg,
       }
-      if(flowLog.parentFlowId){
-        record.parentFlowId = flowLog.parentFlowId
-        record.parentStepId = flowLog.parentStepId;
+      if(logRecord.parentFlowId){
+        record.parentFlowId = logRecord.parentFlowId
+        record.parentStepId = logRecord.parentStepId;
       }
 
       log(record,flowStream, "info");
     }
-    this.#logRecords = new Map();
+    this.#logRecords.clear();
   }
 
   /**

@@ -1,5 +1,6 @@
 import FlowggerError from "./FlowggerError.js";
 import PatternLayout from "./PatternLayout.js";
+import InMemoryStore from "./Storage/InMemoryStore.js";
 
 // const fileAppender = {
 //   handler: new FileAppender({
@@ -33,6 +34,8 @@ export const deaultConfig = {
     // maxIdleTime: 200,       //time difference between 2 consecutive steps
     // maxFlowsCapacity: 1000  //active flows. TODO: manage number of open active flows in memory
   },
+  store: new InMemoryStore(),
+  storeKeyPrefix: "",
 };
 
 export function validateConfig(config) {
