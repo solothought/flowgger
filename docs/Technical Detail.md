@@ -103,7 +103,7 @@ const flowgger = new Flowgger(config);
 const flow = flowgger.init("flowname");
 flow.info("step in the flow");
 //..
-const subflow = flowgger.init("subflowname", flow);
+const subflow = flowgger.init("subflowname", null , "",flow);
 subflow.info("another flow step");
 
 subflow.end();
