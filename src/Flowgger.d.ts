@@ -1,4 +1,4 @@
-interface LogRecord {
+export interface LogRecord {
   //head log, flow log, data log
   id: string;
   reportTime: number;

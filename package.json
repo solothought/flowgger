@@ -34,6 +34,12 @@
         "types": "./src/Flowgger.d.ts",
         "default": "./src/Log4jsAdapter.js"
       }
+    },
+    "./LogRecord": {
+      "import": {
+        "types": "./src/Flowgger.d.ts",
+        "default": "./src/LogRecord.js"
+      }
     }
   },
   "files": [
