@@ -115,3 +115,15 @@ The graph below compares the log size produced by Flowgger versus a traditional 
 Above graph highlights the difference for 1 API call. Suppose you have 10 APIs, Flowgger will generate a log file of 2.75 mb for 1000 requests to each API, where the other frameworks will generate a log file of 22.3 mb. Here, we've considered 20 log statements per API with 50 chars in each statement on average.
 
 Consideration: In this comparison, it is considered that there is no extra debug, error, or other logs. All the log statements define the flow of application. 
+
+---
+
+# TODO
+
+- System level non-flow appenders. Though, this requires very minimal development effort, I've left it to be implemented on user's demand. This can be done by any logging framework so it is on 2nd priority.
+- Application is implemented in ESM module. CJS modules can be generated if needed
+- Application accepts directory path to load flows. We can let user feed flows as text instead. So that the application can be used in the browser as well. However, I dont see any advantage of that so this is on hold.
+- Dynamic appenders to log in temprary file for debug and analysis purpose.
+- Integration with logging and chatting platforms: logstash
+- Update VS code plugin to jump to the code when user clicks on a step in `.stflow` file.
+- Consider keys in smart filtering.

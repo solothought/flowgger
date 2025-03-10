@@ -1,6 +1,9 @@
 
 <small>Note: If you find missing information about particular minor version, that version must have been changed without any functional change in this library.</small>
 
+**1.0.0 / 2025-03-10**
+- Releaing final version
+
 **1.0.0-beta.3 / 2025-03-08**
 - Support External store to store logs
 - Support head message
