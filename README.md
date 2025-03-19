@@ -9,6 +9,8 @@ Additionally, users get all relevant information in a single log entry, such as 
 
 > You can use [Text2Chart](https://solothought.com/text2chart/) to visualize `.stflow` files in VS code IDE.
 
+<img src="https://github.com/NaturalIntelligence/fast-xml-parser/raw/master/static/img/flowgger_h.webp" alt="Flowgger Logging Framework" />
+
 This innovative approach benefits users in two significant ways:
 1. **Reduced Log Size:** Logs are minimal, resulting in faster logging and reduced storage requirements.
 2. **Efficient Debugging:** Flowgger significantly reduces debugging time—from days to minutes—by providing structured, minimal logs.
